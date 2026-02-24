@@ -1,0 +1,46 @@
+{
+  "DHAC": {
+    "Title": "Quick Adversary Creator",
+    "Button": "Create Adversary",
+    "CreateButton": "Create Adversary",
+    "ResetButton": "Reset",
+    "AutoFill": "Auto-fill from Benchmarks",
+    "Tabs": {
+      "Identity": "Identity",
+      "Stats": "Combat Stats",
+      "Attack": "Attack",
+      "Features": "Features"
+    },
+    "Fields": {
+      "Name": "Adversary Name",
+      "Tier": "Tier",
+      "Role": "Role",
+      "Description": "Description",
+      "Motives": "Motives & Tactics",
+      "Difficulty": "Difficulty",
+      "MajorThreshold": "Major Threshold",
+      "SevereThreshold": "Severe Threshold",
+      "HP": "Hit Points",
+      "Stress": "Stress",
+      "ATK": "ATK Modifier",
+      "WeaponName": "Weapon Name",
+      "WeaponRange": "Range",
+      "WeaponDamage": "Damage",
+      "DamageType": "Damage Type",
+      "ExperienceName": "Experience",
+      "ExperienceBonus": "Bonus",
+      "FeatureName": "Feature Name",
+      "FeatureType": "Type",
+      "FeatureDescription": "Description",
+      "FearFeature": "Fear Feature"
+    },
+    "AddFeature": "+ Add Feature",
+    "RemoveFeature": "Remove",
+    "Notifications": {
+      "Created": "Created adversary: {name}",
+      "Error": "Error creating adversary: {error}",
+      "NoName": "Please enter an adversary name.",
+      "FieldDiscovery": "Adversary Creator: Detected Foundryborne data model."
+    }
+  }
+}

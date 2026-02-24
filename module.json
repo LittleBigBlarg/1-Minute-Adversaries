@@ -1,0 +1,37 @@
+{
+  "id": "dh-adversary-creator",
+  "title": "Daggerheart: Quick Adversary Creator",
+  "version": "1.0.0",
+  "description": "A form-based UI for quickly creating Daggerheart adversaries with auto-populated benchmarks. Creates adversary actors directly in your world with all features attached.",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "Adversary Creator",
+      "flags": {}
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "daggerheart",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+  "esmodules": ["scripts/module.mjs"],
+  "styles": ["styles/adversary-creator.css"],
+  "lang": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "",
+  "manifest": "",
+  "download": ""
+}

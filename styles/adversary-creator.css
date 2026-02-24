@@ -1,0 +1,394 @@
+/* ============================================================
+   DH Adversary Creator – Foundry VTT Module Styles
+   ============================================================ */
+
+/* ----- Button in Actor Directory ----- */
+.dhac-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--color-border-dark-tertiary, #555);
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #4a3728, #2c1f15);
+  color: #f0dcc0;
+  transition: background 0.2s;
+}
+.dhac-create-btn:hover {
+  background: linear-gradient(to bottom, #5a4738, #3c2f25);
+  color: #fff;
+}
+.dhac-system-menu-btn {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  justify-content: center;
+}
+
+/* ----- Form Window ----- */
+.dhac-form {
+  background: var(--color-bg, #1a1a2e);
+}
+
+.dhac-form .window-content {
+  padding: 0;
+  background: #1c1c2e;
+  color: #e0d8c8;
+}
+
+.dhac-creator {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ----- Tabs ----- */
+.dhac-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 2px solid #4a3728;
+  padding: 0 8px;
+  background: #15152a;
+  flex-shrink: 0;
+}
+
+.dhac-tabs .item {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a8070;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dhac-tabs .item:hover {
+  color: #d4c4a8;
+}
+.dhac-tabs .item.active {
+  color: #f0dcc0;
+  border-bottom-color: #c4956a;
+}
+.dhac-tabs .item i {
+  margin-right: 4px;
+}
+
+/* ----- Tab Content ----- */
+.dhac-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.dhac-tab-content .tab {
+  display: none;
+}
+.dhac-tab-content .tab.active {
+  display: block;
+}
+
+/* ----- Fields ----- */
+.dhac-field {
+  margin-bottom: 10px;
+}
+.dhac-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9a9080;
+  margin-bottom: 3px;
+}
+.dhac-field input[type="text"],
+.dhac-field input[type="number"],
+.dhac-field textarea,
+.dhac-field select {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 13px;
+  background: #12121f;
+  border: 1px solid #3a3a50;
+  border-radius: 4px;
+  color: #e0d8c8;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.dhac-field input:focus,
+.dhac-field textarea:focus,
+.dhac-field select:focus {
+  border-color: #c4956a;
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(196, 149, 106, 0.2);
+}
+.dhac-field textarea {
+  resize: vertical;
+  min-height: 48px;
+}
+.dhac-field input[type="number"] {
+  -moz-appearance: textfield;
+  text-align: center;
+}
+
+.dhac-field-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.dhac-field-row > .dhac-field {
+  flex: 1;
+}
+.dhac-field-row > .dhac-field-wide {
+  flex: 2;
+}
+
+.dhac-hint {
+  display: block;
+  font-size: 10px;
+  color: #6a6050;
+  margin-top: 2px;
+}
+
+/* ----- Stat Grid ----- */
+.dhac-stat-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+.dhac-stat-field input[type="number"] {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 8px;
+  text-align: center;
+}
+
+/* ----- Section Header ----- */
+.dhac-section-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c4956a;
+  margin: 12px 0 8px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #3a3528;
+}
+.dhac-section-header i {
+  margin-right: 4px;
+}
+
+/* ----- Benchmark Panel ----- */
+.dhac-benchmark-panel {
+  margin: 12px 0;
+  padding: 10px 14px;
+  background: rgba(196, 149, 106, 0.08);
+  border: 1px solid rgba(196, 149, 106, 0.2);
+  border-radius: 6px;
+}
+.dhac-benchmark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.dhac-benchmark-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c4956a;
+}
+.dhac-benchmark-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px 12px;
+  font-size: 11px;
+  color: #b8a888;
+}
+.dhac-benchmark-grid strong {
+  color: #c4956a;
+}
+.dhac-benchmark-dice {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #8a7a60;
+}
+.dhac-benchmark-dice strong {
+  color: #a89070;
+}
+
+.dhac-benchmark-mini {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+/* ----- Auto-fill Button ----- */
+.dhac-autofill {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(to bottom, #c4956a, #a07850);
+  color: #1a1a2e;
+  border: none;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.dhac-autofill:hover {
+  background: linear-gradient(to bottom, #d4a57a, #b08860);
+}
+
+/* ----- Features ----- */
+.dhac-features-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.dhac-features-header .dhac-section-header {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.dhac-add-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #2a2a40;
+  color: #c4956a;
+  border: 1px dashed #4a4a60;
+  border-radius: 4px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.dhac-add-feature:hover {
+  background: #3a3a50;
+  border-color: #c4956a;
+}
+
+.dhac-add-feature-bottom {
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 10px;
+}
+
+.dhac-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dhac-feature-card {
+  background: rgba(30, 30, 50, 0.6);
+  border: 1px solid #3a3a50;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.dhac-feature-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.dhac-feature-number {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6a6a80;
+  text-transform: uppercase;
+}
+.dhac-remove-feature {
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  background: none;
+  color: #a05050;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.dhac-remove-feature:hover {
+  color: #d06060;
+  border-color: #a05050;
+}
+
+.dhac-field-check {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 8px;
+}
+.dhac-field-check label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #c0b8a0;
+  cursor: pointer;
+  text-transform: none;
+  font-weight: 500;
+}
+.dhac-field-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #c4956a;
+}
+
+/* ----- Footer ----- */
+.dhac-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid #3a3528;
+  background: #15152a;
+  flex-shrink: 0;
+}
+.dhac-footer button {
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+  border: none;
+  transition: background 0.2s;
+}
+.dhac-reset {
+  background: none;
+  color: #a05050;
+  border: 1px solid #5a3030 !important;
+}
+.dhac-reset:hover {
+  background: rgba(160, 80, 80, 0.1);
+}
+.dhac-create {
+  background: linear-gradient(to bottom, #c4956a, #9a7048);
+  color: #1a1a2e;
+}
+.dhac-create:hover {
+  background: linear-gradient(to bottom, #d4a57a, #aa8058);
+}
+
+/* ----- Scrollbar ----- */
+.dhac-tab-content::-webkit-scrollbar {
+  width: 6px;
+}
+.dhac-tab-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dhac-tab-content::-webkit-scrollbar-thumb {
+  background: #3a3a50;
+  border-radius: 3px;
+}
+
+/* ----- Foundry Overrides ----- */
+.dhac-form .window-content form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
