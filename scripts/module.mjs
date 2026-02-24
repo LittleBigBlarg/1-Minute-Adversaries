@@ -1,115 +1,176 @@
-import { AdversaryCreatorForm } from "./adversary-creator-form.mjs";
+import { AdversaryCreatorApp } from "./adversary-creator-app.mjs";
 
 const MODULE_ID = "dh-adversary-creator";
 
-/**
- * Discover the Foundryborne adversary data model by inspecting an existing actor
- * or by reading the system's registered data models. This ensures we create
- * adversaries with exactly the right field paths.
- */
-async function discoverDataModel() {
-  // Check if the system defines a data model for adversaries
-  const dataModels = CONFIG.Actor?.dataModels;
-  if (dataModels?.adversary) {
-    console.log(`${MODULE_ID} | Found adversary DataModel in CONFIG.Actor.dataModels`);
-    return;
-  }
-
-  // Try to find an existing adversary actor to inspect
-  const sample = game.actors.find(a => a.type === "adversary");
-  if (sample) {
-    const obj = sample.toObject();
-    console.log(`${MODULE_ID} | Sample adversary data:`, obj.system);
-    // Store the discovered schema for reference
-    game.modules.get(MODULE_ID).sampleSchema = obj.system;
-  }
-}
-
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Initializing Quick Adversary Creator`);
-});
 
-Hooks.once("ready", async () => {
-  console.log(`${MODULE_ID} | Ready`);
+  Handlebars.registerHelper("eq", (a, b) => a === b);
+  Handlebars.registerHelper("capitalize", (str) => {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  });
+  Handlebars.registerHelper("increment", (val) => Number(val) + 1);
 
-  // Only GMs should use this module
-  if (!game.user.isGM) return;
-
-  await discoverDataModel();
-
-  // Register keybinding
-  game.keybindings?.register(MODULE_ID, "openCreator", {
+  game.keybindings.register(MODULE_ID, "openCreator", {
     name: "Open Adversary Creator",
     hint: "Opens the Quick Adversary Creator form",
     editable: [{ key: "KeyN", modifiers: ["Shift", "Control"] }],
-    onDown: () => {
-      new AdversaryCreatorForm().render(true);
-    },
+    onDown: () => { new AdversaryCreatorApp().render(true); },
     restricted: true,
     precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
   });
 });
 
-/**
- * Add the "Create Adversary" button to the Actor Directory header.
- */
-Hooks.on("getActorDirectoryEntryContext", () => { /* no-op, just ensuring hook fires */ });
-
-Hooks.on("renderActorDirectory", (app, html, data) => {
-  if (!game.user.isGM) return;
-
-  const button = document.createElement("button");
-  button.type = "button";
-  button.classList.add("dhac-create-btn");
-  button.innerHTML = `<i class="fas fa-skull-crossbones"></i> Create Adversary`;
-  button.addEventListener("click", (ev) => {
-    ev.preventDefault();
-    new AdversaryCreatorForm().render(true);
-  });
-
-  // Insert into the action buttons area of the directory header
-  const actionButtons = html[0]?.querySelector?.(".action-buttons")
-    ?? html[0]?.querySelector?.(".directory-header .header-actions")
-    ?? html[0]?.querySelector?.(".directory-header");
-
-  if (actionButtons) {
-    actionButtons.appendChild(button);
-  } else {
-    // Fallback: try jQuery style
-    const header = html.find(".directory-header");
-    if (header.length) {
-      header.append(button);
-    }
-  }
-});
-
-/**
- * Also add to the Daggerheart system menu if it exists
- * (Foundryborne adds a custom sidebar tab)
- */
-Hooks.on("renderSidebarTab", (app, html) => {
-  if (!game.user.isGM) return;
-  if (app.constructor.name !== "DaggerheartMenu" && app.tabName !== "daggerheart") return;
-
-  const button = document.createElement("button");
-  button.type = "button";
-  button.classList.add("dhac-create-btn", "dhac-system-menu-btn");
-  button.innerHTML = `<i class="fas fa-skull-crossbones"></i> Quick Adversary Creator`;
-  button.addEventListener("click", (ev) => {
-    ev.preventDefault();
-    new AdversaryCreatorForm().render(true);
-  });
-
-  const target = html[0]?.querySelector?.(".directory-list") ?? html[0];
-  if (target) target.prepend(button);
-});
-
-// Expose API for macro use
 Hooks.once("ready", () => {
+  if (!game.user.isGM) return;
+  console.log(`${MODULE_ID} | Ready`);
+
   const mod = game.modules.get(MODULE_ID);
   if (mod) {
     mod.api = {
-      open: () => new AdversaryCreatorForm().render(true),
+      open: () => new AdversaryCreatorApp().render(true),
+      openForActor: (actor) => AdversaryCreatorApp.openForActor(actor),
     };
   }
+});
+
+Hooks.on("renderActorDirectory", (app, html) => {
+  if (!game.user.isGM) return;
+  const root = html instanceof HTMLElement ? html : (html[0] ?? html);
+  if (!root || root.querySelector(".dhac-create-adversary-btn")) return;
+
+  const target = root.querySelector(".action-buttons")
+    ?? root.querySelector(".header-actions")
+    ?? root.querySelector(".directory-header");
+  if (!target) return;
+
+  const exemplar = [...target.querySelectorAll("button, a")]
+    .find(el => !el.classList.contains("dhac-create-btn"));
+
+  const button = exemplar ? exemplar.cloneNode(true) : document.createElement("button");
+  if (!(button instanceof HTMLElement)) return;
+
+  button.replaceChildren();
+  if (button instanceof HTMLButtonElement) button.type = "button";
+  button.classList.add("dhac-create-adversary-btn");
+
+  // Remove attrs that could interfere when cloning another module's control.
+  for (const attr of ["data-action", "data-tooltip", "aria-controls", "id"]) {
+    button.removeAttribute(attr);
+  }
+
+  const icon = document.createElement("i");
+  icon.className = "fas fa-skull-crossbones";
+  button.append(icon, document.createTextNode(" Create Adversary"));
+
+  button.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    new AdversaryCreatorApp().render(true);
+  });
+
+  target.appendChild(button);
+});
+
+function getActorFromApp(app) {
+  return app?.actor ?? app?.document ?? null;
+}
+
+function isAdversarySheetApp(app) {
+  const actor = getActorFromApp(app);
+  return Boolean(actor?.documentName === "Actor" && actor.type === "adversary");
+}
+
+function injectQuickEditButton(app, root) {
+  if (!game.user.isGM) return;
+  if (!isAdversarySheetApp(app) || !root) return;
+  const actor = getActorFromApp(app);
+
+  // If the standard header hook was ignored by a custom sheet implementation,
+  // inject directly into the window header controls.
+  if (root.querySelector(".dhac-quick-edit-btn")) return;
+
+  const headerControls = root.querySelector(".window-header .header-control")
+    ? root.querySelector(".window-header")
+    : root.closest?.(".app")?.querySelector?.(".window-header");
+
+  if (headerControls) {
+    const closeBtn = headerControls.querySelector('[data-action="close"]')
+      ?? headerControls.querySelector(".header-control.close");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "header-control icon dhac-quick-edit-btn";
+    btn.dataset.action = "dhac-quick-edit";
+    btn.innerHTML = `<i class="fas fa-pen-to-square"></i>`;
+    btn.setAttribute("data-tooltip", "Quick Edit");
+    btn.title = "Quick Edit";
+    btn.setAttribute("aria-label", "Quick Edit");
+    btn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      AdversaryCreatorApp.openForActor(actor);
+    });
+
+    if (closeBtn) closeBtn.before(btn);
+    else headerControls.appendChild(btn);
+    return;
+  }
+
+  // Last-resort fallback: inject a visible button at the top of the sheet content.
+  const content = root.querySelector(".window-content") ?? root;
+  if (!content || content.querySelector(".dhac-quick-edit-inline")) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "dhac-quick-edit-inline";
+  wrap.style.display = "flex";
+  wrap.style.justifyContent = "flex-end";
+  wrap.style.padding = "0.5rem 0.75rem 0";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "dhac-btn-create";
+  button.innerHTML = `<i class="fas fa-pen-to-square"></i>`;
+  button.title = "Quick Edit";
+  button.setAttribute("aria-label", "Quick Edit");
+  button.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    AdversaryCreatorApp.openForActor(actor);
+  });
+
+  wrap.appendChild(button);
+  content.prepend(wrap);
+}
+
+// Foundry V13+ / ApplicationV2 sheets
+Hooks.on("getHeaderControlsApplicationV2", (app, controls) => {
+  // Intentionally no-op for adversary sheets.
+  // Foundryborne's header styling/ordering is more reliable when we mirror PopOut's
+  // direct DOM insertion in renderApplicationV2.
+  if (!game.user.isGM) return;
+  if (!isAdversarySheetApp(app)) return;
+});
+
+Hooks.on("renderApplicationV2", (app, element) => {
+  injectQuickEditButton(app, element instanceof HTMLElement ? element : app?.element);
+});
+
+// Legacy V1 fallback (if a sheet still uses ActorSheet v1 APIs)
+Hooks.on("getActorSheetHeaderButtons", (app, buttons) => {
+  if (!game.user.isGM) return;
+  if (!isAdversarySheetApp(app)) return;
+
+  buttons.push({
+    class: "dhac-quick-edit",
+    icon: "fas fa-pen-to-square",
+    label: "",
+    title: "Quick Edit",
+    onclick: () => AdversaryCreatorApp.openForActor(getActorFromApp(app)),
+  });
+});
+
+Hooks.on("renderActorSheet", (app, html) => {
+  const root = html instanceof HTMLElement ? html : (html?.[0] ?? app?.element);
+  injectQuickEditButton(app, root);
 });

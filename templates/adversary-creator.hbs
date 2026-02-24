@@ -1,235 +1,332 @@
-<form class="dhac-creator" autocomplete="off">
+<div class="dhac-layout">
 
-  {{!-- Tab Navigation --}}
-  <nav class="dhac-tabs sheet-tabs tabs" data-group="primary">
-    <a class="item" data-tab="identity"><i class="fas fa-id-card"></i> Identity</a>
-    <a class="item" data-tab="stats"><i class="fas fa-shield-alt"></i> Stats</a>
-    <a class="item" data-tab="attack"><i class="fas fa-crosshairs"></i> Attack</a>
-    <a class="item" data-tab="features"><i class="fas fa-star"></i> Features ({{features.length}})</a>
-  </nav>
+  {{!-- ==================== TOP BAR ==================== --}}
+  <div class="dhac-topbar">
+    <div class="dhac-actor-image-controls">
+      <button
+        type="button"
+        class="dhac-actor-image-btn"
+        data-action="pickActorImage"
+        title="Choose adversary portrait"
+      >
+        <img src="{{img}}" alt="" class="dhac-actor-image" />
+      </button>
+      <button
+        type="button"
+        class="dhac-feature-image-reset-btn"
+        data-action="resetActorImage"
+        title="Reset portrait"
+      >
+        <i class="fas fa-rotate-left"></i>
+      </button>
+      <input type="hidden" name="img" value="{{img}}" />
+    </div>
+    <div class="dhac-topbar-field dhac-topbar-name">
+      <label>Name</label>
+      <input type="text" name="name" value="{{name}}" placeholder="e.g. Stone Golem" autofocus />
+    </div>
+    <div class="dhac-topbar-field dhac-topbar-narrow">
+      <label>Tier</label>
+      <select name="tier">
+        <option value="1" {{#if (eq tier 1)}}selected{{/if}}>1</option>
+        <option value="2" {{#if (eq tier 2)}}selected{{/if}}>2</option>
+        <option value="3" {{#if (eq tier 3)}}selected{{/if}}>3</option>
+        <option value="4" {{#if (eq tier 4)}}selected{{/if}}>4</option>
+      </select>
+    </div>
+    <div class="dhac-topbar-field dhac-topbar-role">
+      <label>Role</label>
+      <select name="role">
+        {{#each roles}}
+        <option value="{{this}}" {{#if (eq this ../role)}}selected{{/if}}>{{capitalize this}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <button type="button" data-action="autofill" class="dhac-btn-autofill" title="Auto-fill stats from SRD benchmarks">
+      <i class="fas fa-magic"></i> Auto-fill
+    </button>
+  </div>
 
-  <div class="dhac-tab-content">
+  {{!-- ==================== MAIN CONTENT ==================== --}}
+  <div class="dhac-main">
 
-    {{!-- ==================== IDENTITY TAB ==================== --}}
-    <section class="tab" data-tab="identity" data-group="primary">
+    {{!-- Left Column: Stats --}}
+    <div class="dhac-column dhac-col-stats">
+      <h3 class="dhac-section-title"><i class="fas fa-shield-alt"></i> Combat Stats</h3>
 
-      <div class="dhac-field-row">
-        <div class="dhac-field dhac-field-wide">
-          <label>{{localize "DHAC.Fields.Name"}}</label>
-          <input type="text" name="name" value="{{name}}" placeholder="e.g. Stone Golem" autofocus />
-        </div>
-      </div>
-
-      <div class="dhac-field-row">
-        <div class="dhac-field">
-          <label>{{localize "DHAC.Fields.Tier"}}</label>
-          <select name="tier">
-            <option value="1" {{#if (eq tier 1)}}selected{{/if}}>Tier 1 (Level 1)</option>
-            <option value="2" {{#if (eq tier 2)}}selected{{/if}}>Tier 2 (Levels 2–4)</option>
-            <option value="3" {{#if (eq tier 3)}}selected{{/if}}>Tier 3 (Levels 5–7)</option>
-            <option value="4" {{#if (eq tier 4)}}selected{{/if}}>Tier 4 (Levels 8–10)</option>
-          </select>
-        </div>
-        <div class="dhac-field">
-          <label>{{localize "DHAC.Fields.Role"}}</label>
-          <select name="role">
-            {{#each roles}}
-            <option value="{{this}}" {{#if (eq this ../role)}}selected{{/if}}>{{capitalize this}}</option>
-            {{/each}}
-          </select>
-        </div>
-      </div>
-
-      <div class="dhac-field">
-        <label>{{localize "DHAC.Fields.Description"}}</label>
-        <textarea name="description" rows="2" placeholder="Appearance and demeanor...">{{description}}</textarea>
-      </div>
-
-      <div class="dhac-field">
-        <label>{{localize "DHAC.Fields.Motives"}}</label>
-        <input type="text" name="motives" value="{{motives}}" placeholder="e.g. Devour, terrify, crush" />
-      </div>
-
-      {{!-- Benchmark Reference --}}
-      {{#if benchmarkStr}}
-      <div class="dhac-benchmark-panel">
-        <div class="dhac-benchmark-header">
-          <span class="dhac-benchmark-title"><i class="fas fa-chart-bar"></i> Tier {{tier}} {{capitalize role}} Benchmarks</span>
-          <button type="button" class="dhac-autofill"><i class="fas fa-magic"></i> {{localize "DHAC.AutoFill"}}</button>
-        </div>
-        <div class="dhac-benchmark-grid">
-          <span><strong>Diff:</strong> {{benchmarkStr.difficulty}}</span>
-          <span><strong>Major:</strong> {{benchmarkStr.major}}</span>
-          <span><strong>Severe:</strong> {{benchmarkStr.severe}}</span>
-          <span><strong>HP:</strong> {{benchmarkStr.hp}}</span>
-          <span><strong>Stress:</strong> {{benchmarkStr.stress}}</span>
-          <span><strong>ATK:</strong> {{benchmarkStr.atk}}</span>
-        </div>
-        {{#if benchmarkStr.dice}}
-        <div class="dhac-benchmark-dice">
-          <strong>Dice:</strong> {{benchmarkStr.dice}}
-        </div>
-        {{/if}}
-      </div>
-      {{/if}}
-
-    </section>
-
-    {{!-- ==================== STATS TAB ==================== --}}
-    <section class="tab" data-tab="stats" data-group="primary">
-
-      {{#if benchmarkStr}}
-      <div class="dhac-benchmark-mini">
-        <button type="button" class="dhac-autofill"><i class="fas fa-magic"></i> Auto-fill</button>
-      </div>
-      {{/if}}
-
-      <div class="dhac-field-row dhac-stat-grid">
-        <div class="dhac-field dhac-stat-field">
-          <label>{{localize "DHAC.Fields.Difficulty"}}</label>
+      <div class="dhac-stat-row">
+        <div class="dhac-stat">
+          <label>Difficulty {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.difficulty}})</span>{{/if}}</label>
           <input type="number" name="difficulty" value="{{difficulty}}" />
-          {{#if benchmarkStr}}<span class="dhac-hint">{{benchmarkStr.difficulty}}</span>{{/if}}
         </div>
-        <div class="dhac-field dhac-stat-field">
-          <label>{{localize "DHAC.Fields.MajorThreshold"}}</label>
-          <input type="number" name="majorThreshold" value="{{majorThreshold}}" />
-          {{#if benchmarkStr}}<span class="dhac-hint">{{benchmarkStr.major}}</span>{{/if}}
-        </div>
-        <div class="dhac-field dhac-stat-field">
-          <label>{{localize "DHAC.Fields.SevereThreshold"}}</label>
-          <input type="number" name="severeThreshold" value="{{severeThreshold}}" />
-          {{#if benchmarkStr}}<span class="dhac-hint">{{benchmarkStr.severe}}</span>{{/if}}
-        </div>
-      </div>
-
-      <div class="dhac-field-row dhac-stat-grid">
-        <div class="dhac-field dhac-stat-field">
-          <label>{{localize "DHAC.Fields.HP"}}</label>
+        <div class="dhac-stat">
+          <label>HP {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.hp}})</span>{{/if}}</label>
           <input type="number" name="hp" value="{{hp}}" />
-          {{#if benchmarkStr}}<span class="dhac-hint">{{benchmarkStr.hp}}</span>{{/if}}
         </div>
-        <div class="dhac-field dhac-stat-field">
-          <label>{{localize "DHAC.Fields.Stress"}}</label>
+        <div class="dhac-stat">
+          <label>Stress {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.stress}})</span>{{/if}}</label>
           <input type="number" name="stress" value="{{stress}}" />
-          {{#if benchmarkStr}}<span class="dhac-hint">{{benchmarkStr.stress}}</span>{{/if}}
         </div>
       </div>
 
-      <hr />
-
-      <h3 class="dhac-section-header"><i class="fas fa-book"></i> Experience (Optional)</h3>
-      <div class="dhac-field-row">
-        <div class="dhac-field dhac-field-wide">
-          <label>{{localize "DHAC.Fields.ExperienceName"}}</label>
-          <input type="text" name="experienceName" value="{{experienceName}}" placeholder="e.g. Stealth, Intimidation" />
+      <div class="dhac-stat-row">
+        <div class="dhac-stat">
+          <label>Major {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.major}})</span>{{/if}}</label>
+          <input type="number" name="majorThreshold" value="{{majorThreshold}}" />
         </div>
-        <div class="dhac-field">
-          <label>{{localize "DHAC.Fields.ExperienceBonus"}}</label>
-          <input type="number" name="experienceBonus" value="{{experienceBonus}}" />
+        <div class="dhac-stat">
+          <label>Severe {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.severe}})</span>{{/if}}</label>
+          <input type="number" name="severeThreshold" value="{{severeThreshold}}" />
         </div>
-      </div>
-
-    </section>
-
-    {{!-- ==================== ATTACK TAB ==================== --}}
-    <section class="tab" data-tab="attack" data-group="primary">
-
-      <h3 class="dhac-section-header"><i class="fas fa-crosshairs"></i> Standard Attack</h3>
-
-      <div class="dhac-field-row">
-        <div class="dhac-field dhac-stat-field">
-          <label>{{localize "DHAC.Fields.ATK"}}</label>
+        <div class="dhac-stat">
+          <label>ATK {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.atk}})</span>{{/if}}</label>
           <input type="number" name="atk" value="{{atk}}" />
-          {{#if benchmarkStr}}<span class="dhac-hint">{{benchmarkStr.atk}}</span>{{/if}}
-        </div>
-        <div class="dhac-field dhac-field-wide">
-          <label>{{localize "DHAC.Fields.WeaponName"}}</label>
-          <input type="text" name="weaponName" value="{{weaponName}}" placeholder="e.g. Claws, Longbow, Staff" />
         </div>
       </div>
 
+      <h3 class="dhac-section-title"><i class="fas fa-crosshairs"></i> Attack {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.dice}})</span>{{/if}}</h3>
       <div class="dhac-field-row">
-        <div class="dhac-field">
-          <label>{{localize "DHAC.Fields.WeaponRange"}}</label>
+        <div class="dhac-field" style="flex:2">
+          <label>Weapon Name</label>
+          <input type="text" name="weaponName" value="{{weaponName}}" placeholder="e.g. Claws" />
+        </div>
+        <div class="dhac-field" style="flex:1">
+          <label>Range</label>
           <select name="weaponRange">
             {{#each ranges}}
-            <option value="{{this}}" {{#if (eq this ../weaponRange)}}selected{{/if}}>{{capitalize this}}</option>
+            <option value="{{@key}}" {{#if (eq @key ../weaponRange)}}selected{{/if}}>{{this}}</option>
             {{/each}}
           </select>
         </div>
+      </div>
+
+      <div class="dhac-field-row">
         <div class="dhac-field">
-          <label>{{localize "DHAC.Fields.WeaponDamage"}}</label>
-          <input type="text" name="weaponDamage" value="{{weaponDamage}}" placeholder="e.g. 1d8+3" />
-          {{#if benchmarkStr.dice}}<span class="dhac-hint">{{benchmarkStr.dice}}</span>{{/if}}
+          <label>Count</label>
+          <input type="number" name="weaponDamageCount" value="{{weaponDamageCount}}" min="1" />
         </div>
         <div class="dhac-field">
-          <label>{{localize "DHAC.Fields.DamageType"}}</label>
+          <label>Dice</label>
+          <select name="weaponDamageDice">
+            <option value="d4" {{#if (eq weaponDamageDice "d4")}}selected{{/if}}>d4</option>
+            <option value="d6" {{#if (eq weaponDamageDice "d6")}}selected{{/if}}>d6</option>
+            <option value="d8" {{#if (eq weaponDamageDice "d8")}}selected{{/if}}>d8</option>
+            <option value="d10" {{#if (eq weaponDamageDice "d10")}}selected{{/if}}>d10</option>
+            <option value="d12" {{#if (eq weaponDamageDice "d12")}}selected{{/if}}>d12</option>
+            <option value="d20" {{#if (eq weaponDamageDice "d20")}}selected{{/if}}>d20</option>
+          </select>
+        </div>
+        <div class="dhac-field">
+          <label>Bonus</label>
+          <input type="number" name="weaponDamageBonus" value="{{weaponDamageBonus}}" />
+        </div>
+        <div class="dhac-field">
+          <label>Type</label>
           <select name="weaponDamageType">
-            <option value="phy" {{#if (eq weaponDamageType "phy")}}selected{{/if}}>Physical</option>
-            <option value="mag" {{#if (eq weaponDamageType "mag")}}selected{{/if}}>Magic</option>
+            <option value="physical" {{#if (eq weaponDamageType "physical")}}selected{{/if}}>Physical</option>
+            <option value="magical" {{#if (eq weaponDamageType "magical")}}selected{{/if}}>Magical</option>
           </select>
         </div>
       </div>
 
-    </section>
+      <h3 class="dhac-section-title"><i class="fas fa-book"></i> Details</h3>
+      <div class="dhac-field">
+        <label>Description</label>
+        <textarea name="description" rows="4" placeholder="Appearance and demeanor...">{{description}}</textarea>
+      </div>
+      <div class="dhac-field">
+        <label>Motives & Tactics</label>
+        <textarea name="motives" rows="3" placeholder="e.g. Devour, terrify, protect territory">{{motives}}</textarea>
+      </div>
+      <div class="dhac-experiences-header">
+        <label>Experience {{#if expRange}}<span class="dhac-range">({{expRange}})</span>{{/if}}</label>
+        <button type="button" data-action="addExperience" class="dhac-btn-add-inline"><i class="fas fa-plus"></i> Add</button>
+      </div>
+      <div class="dhac-experiences-list">
+        {{#each experiences}}
+        <div class="dhac-field-row dhac-experience-row">
+          <div class="dhac-field" style="flex:2">
+            <input type="text" name="experience.{{@index}}.name" value="{{this.name}}" placeholder="e.g. Stealth" />
+          </div>
+          <div class="dhac-field" style="flex:1">
+            <input type="number" name="experience.{{@index}}.bonus" value="{{this.bonus}}" />
+          </div>
+          <button type="button" data-action="removeExperience" data-experience-id="{{this.id}}" class="dhac-btn-remove" title="Remove experience"><i class="fas fa-trash"></i></button>
+        </div>
+        {{/each}}
+      </div>
+    </div>
 
-    {{!-- ==================== FEATURES TAB ==================== --}}
-    <section class="tab" data-tab="features" data-group="primary">
-
+    {{!-- Right Column: Features --}}
+    <div class="dhac-column dhac-col-features">
+      <input type="hidden" name="rightTab" value="{{#if isEffectsTab}}effects{{else}}features{{/if}}" />
       <div class="dhac-features-header">
-        <h3 class="dhac-section-header"><i class="fas fa-star"></i> Adversary Features</h3>
-        <button type="button" class="dhac-add-feature"><i class="fas fa-plus"></i> {{localize "DHAC.AddFeature"}}</button>
+        <div class="dhac-right-tabs">
+          <button type="button" data-action="switchRightTab" data-tab="features" class="dhac-right-tab {{#if isFeaturesTab}}is-active{{/if}}">
+            <i class="fas fa-star"></i> Features ({{features.length}})
+          </button>
+          <button type="button" data-action="switchRightTab" data-tab="effects" class="dhac-right-tab {{#if isEffectsTab}}is-active{{/if}}">
+            <i class="fas fa-bolt"></i> Effects
+          </button>
+        </div>
+        {{#if isFeaturesTab}}
+        <button type="button" data-action="addFeature" class="dhac-btn-add"><i class="fas fa-plus"></i> Add</button>
+        {{/if}}
       </div>
 
-      <div class="dhac-features-list">
+      {{#if isFeaturesTab}}
+      <div class="dhac-features-scroll">
         {{#each features}}
-        <div class="dhac-feature-card" data-feature-id="{{this.id}}">
-          <div class="dhac-feature-card-header">
-            <span class="dhac-feature-number">#{{math @index "+" 1}}</span>
-            <button type="button" class="dhac-remove-feature" data-feature-id="{{this.id}}">
-              <i class="fas fa-trash"></i> {{localize "DHAC.RemoveFeature"}}
+        <div class="dhac-feature-card">
+          <div class="dhac-feature-top">
+            <button
+              type="button"
+              class="dhac-feature-image-btn"
+              data-action="pickFeatureImage"
+              data-feature-index="{{@index}}"
+              title="Choose feature image"
+            >
+              <img src="{{this.img}}" alt="" class="dhac-feature-image" />
             </button>
+            <button
+              type="button"
+              class="dhac-feature-image-reset-btn"
+              data-action="resetFeatureImage"
+              data-feature-index="{{@index}}"
+              title="Reset feature image"
+            >
+              <i class="fas fa-rotate-left"></i>
+            </button>
+            <input type="hidden" name="feature.{{@index}}.img" value="{{this.img}}" />
+            <input type="text" name="feature.{{@index}}.name" value="{{this.name}}" placeholder="Feature Name (auto-fills if blank)" class="dhac-feature-name-input" />
+            <select name="feature.{{@index}}.formType" class="dhac-feature-type-select">
+              <option value="passive" {{#if (eq this.formType "passive")}}selected{{/if}}>Passive</option>
+              <option value="action" {{#if (eq this.formType "action")}}selected{{/if}}>Action</option>
+              <option value="reaction" {{#if (eq this.formType "reaction")}}selected{{/if}}>Reaction</option>
+            </select>
+            <button type="button" data-action="removeFeature" data-feature-id="{{this.id}}" class="dhac-btn-remove" title="Remove"><i class="fas fa-trash"></i></button>
           </div>
-
-          <div class="dhac-field-row">
-            <div class="dhac-field dhac-field-wide">
-              <label>{{localize "DHAC.Fields.FeatureName"}}</label>
-              <input type="text" name="feature.{{@index}}.name" value="{{this.name}}" placeholder="e.g. Relentless (2)" />
-            </div>
-            <div class="dhac-field">
-              <label>{{localize "DHAC.Fields.FeatureType"}}</label>
-              <select name="feature.{{@index}}.type">
-                <option value="passive" {{#if (eq this.type "passive")}}selected{{/if}}>Passive</option>
-                <option value="action" {{#if (eq this.type "action")}}selected{{/if}}>Action</option>
-                <option value="reaction" {{#if (eq this.type "reaction")}}selected{{/if}}>Reaction</option>
-              </select>
-            </div>
-            <div class="dhac-field dhac-field-check">
-              <label>
-                <input type="checkbox" name="feature.{{@index}}.isFearFeature" {{#if this.isFearFeature}}checked{{/if}} />
-                {{localize "DHAC.Fields.FearFeature"}}
-              </label>
-            </div>
-          </div>
-
-          <div class="dhac-field">
-            <label>{{localize "DHAC.Fields.FeatureDescription"}}</label>
-            <textarea name="feature.{{@index}}.description" rows="3" placeholder="Describe the feature's effect...">{{this.description}}</textarea>
+          <textarea name="feature.{{@index}}.description" data-desc-index="{{@index}}" rows="3" placeholder="Describe the feature. Buttons auto-populate from detected text. Use damage:dice+modifier DamageType for damage tags (DamageType = physical or magical) and reaction:attribute for reaction tags.">{{this.description}}</textarea>
+          <div class="dhac-toggles-row" data-toggles-index="{{@index}}">
+            {{!-- Toggles rendered by JS _onRender --}}
           </div>
         </div>
         {{/each}}
       </div>
 
-      <button type="button" class="dhac-add-feature dhac-add-feature-bottom"><i class="fas fa-plus"></i> {{localize "DHAC.AddFeature"}}</button>
+      <button type="button" data-action="addFeature" class="dhac-btn-add-bottom"><i class="fas fa-plus"></i> Add Feature</button>
+      {{/if}}
 
-    </section>
+      {{#if isEffectsTab}}
+      <div class="dhac-features-scroll">
+        <div class="dhac-feature-card">
+          <div class="dhac-effects-panel">
+            <p class="dhac-effects-help">
+              These toggles create actor effects and set the corresponding values to 1 (Override).
+            </p>
 
+            <div class="dhac-effects-group">
+              <div class="dhac-effects-group-title">Severity Reduction (reduce severity by 1 to 3)</div>
+              <div class="dhac-effect-row">
+                <button
+                  type="button"
+                  data-action="toggleEffectFlag"
+                  data-effect-key="physicalSeverityReductionEnabled"
+                  class="dhac-effect-toggle {{#if effects.physicalSeverityReductionEnabled}}is-on{{/if}}"
+                >
+                  <span class="dhac-effect-toggle-label">Physical Severity Reduction</span>
+                  <span class="dhac-effect-toggle-state">{{#if effects.physicalSeverityReductionEnabled}}On{{else}}Off{{/if}}</span>
+                </button>
+                <select
+                  class="dhac-effect-value-input"
+                  name="effect.physicalSeverityReduction"
+                  title="1-3 = reduce severity by that amount"
+                >
+                  <option value="1" {{#if (eq effects.physicalSeverityReduction 1)}}selected{{/if}}>1</option>
+                  <option value="2" {{#if (eq effects.physicalSeverityReduction 2)}}selected{{/if}}>2</option>
+                  <option value="3" {{#if (eq effects.physicalSeverityReduction 3)}}selected{{/if}}>3</option>
+                </select>
+              </div>
+
+              <div class="dhac-effect-row">
+                <button
+                  type="button"
+                  data-action="toggleEffectFlag"
+                  data-effect-key="magicSeverityReductionEnabled"
+                  class="dhac-effect-toggle {{#if effects.magicSeverityReductionEnabled}}is-on{{/if}}"
+                >
+                  <span class="dhac-effect-toggle-label">Magic Severity Reduction</span>
+                  <span class="dhac-effect-toggle-state">{{#if effects.magicSeverityReductionEnabled}}On{{else}}Off{{/if}}</span>
+                </button>
+                <select
+                  class="dhac-effect-value-input"
+                  name="effect.magicSeverityReduction"
+                  title="1-3 = reduce severity by that amount"
+                >
+                  <option value="1" {{#if (eq effects.magicSeverityReduction 1)}}selected{{/if}}>1</option>
+                  <option value="2" {{#if (eq effects.magicSeverityReduction 2)}}selected{{/if}}>2</option>
+                  <option value="3" {{#if (eq effects.magicSeverityReduction 3)}}selected{{/if}}>3</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dhac-effects-group">
+              <div class="dhac-effects-group-title">Resistance (half damage)</div>
+              <button
+                type="button"
+                data-action="toggleEffectFlag"
+                data-effect-key="physicalResistance"
+                class="dhac-effect-toggle {{#if effects.physicalResistance}}is-on{{/if}}"
+              >
+                <span class="dhac-effect-toggle-label">Physical Resistance</span>
+                <span class="dhac-effect-toggle-state">{{#if effects.physicalResistance}}On{{else}}Off{{/if}}</span>
+              </button>
+
+              <button
+                type="button"
+                data-action="toggleEffectFlag"
+                data-effect-key="magicResistance"
+                class="dhac-effect-toggle {{#if effects.magicResistance}}is-on{{/if}}"
+              >
+                <span class="dhac-effect-toggle-label">Magic Resistance</span>
+                <span class="dhac-effect-toggle-state">{{#if effects.magicResistance}}On{{else}}Off{{/if}}</span>
+              </button>
+            </div>
+
+            <div class="dhac-effects-group">
+              <div class="dhac-effects-group-title">Immunity</div>
+              <button
+                type="button"
+                data-action="toggleEffectFlag"
+                data-effect-key="physicalImmunity"
+                class="dhac-effect-toggle {{#if effects.physicalImmunity}}is-on{{/if}}"
+              >
+                <span class="dhac-effect-toggle-label">Physical Immunity</span>
+                <span class="dhac-effect-toggle-state">{{#if effects.physicalImmunity}}On{{else}}Off{{/if}}</span>
+              </button>
+
+              <button
+                type="button"
+                data-action="toggleEffectFlag"
+                data-effect-key="magicImmunity"
+                class="dhac-effect-toggle {{#if effects.magicImmunity}}is-on{{/if}}"
+              >
+                <span class="dhac-effect-toggle-label">Magic Immunity</span>
+                <span class="dhac-effect-toggle-state">{{#if effects.magicImmunity}}On{{else}}Off{{/if}}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      {{/if}}
+    </div>
   </div>
 
-  {{!-- Action Buttons --}}
-  <footer class="dhac-footer">
-    <button type="button" class="dhac-reset"><i class="fas fa-undo"></i> {{localize "DHAC.ResetButton"}}</button>
-    <button type="button" class="dhac-create"><i class="fas fa-skull-crossbones"></i> {{localize "DHAC.CreateButton"}}</button>
-  </footer>
+  {{!-- ==================== FOOTER ==================== --}}
+  <div class="dhac-footer">
+    <button type="button" data-action="resetForm" class="dhac-btn-reset"><i class="fas fa-undo"></i> Reset</button>
+    <button type="button" data-action="createAdversary" class="dhac-btn-create"><i class="fas fa-skull-crossbones"></i> {{submitLabel}}</button>
+  </div>
 
-</form>
+</div>
