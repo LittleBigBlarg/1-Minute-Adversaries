@@ -31,7 +31,7 @@
       "path": "lang/en.json"
     }
   ],
-  "url": "",
-  "manifest": "",
-  "download": ""
+  "url": "https://github.com/LittleBigBlarg/DH-Adversary-Builder",
+  "manifest": "https://raw.githubusercontent.com/LittleBigBlarg/DH-Adversary-Builder/main/module.json",
+  "download": "https://github.com/LittleBigBlarg/DH-Adversary-Builder/archive/refs/heads/main.zip"
 }
