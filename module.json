@@ -1,15 +1,15 @@
 {
   "id": "dh-adversary-creator",
-  "title": "Daggerheart: Quick Adversary Creator",
+  "title": "Daggerheart: 1-Minute Adversaries",
   "version": "1.0.0",
-  "description": "A form-based UI for quickly creating Daggerheart adversaries with auto-populated benchmarks. Creates adversary actors directly in your world with all features attached.",
+  "description": "Build or edit Daggerheart adversaries in Foundry with benchmark autofill, natural-language feature action detection, multi-experience support, and inline damage roll tagging.",
   "compatibility": {
     "minimum": "12",
     "verified": "13"
   },
   "authors": [
     {
-      "name": "Adversary Creator",
+      "name": "1-Minute Adversaries",
       "flags": {}
     }
   ],

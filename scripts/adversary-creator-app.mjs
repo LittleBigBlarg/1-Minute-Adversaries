@@ -1,7 +1,7 @@
-import { BENCHMARKS, ROLES, RANGES, EXPERIENCE_BY_TIER, mid, rangeStr } from "./benchmarks.mjs";
+import { BENCHMARKS, ROLES, RANGES, EXPERIENCE_BY_TIER, mid, rangeStr, ROLE_TIPS, ROLE_FEATURES } from "./benchmarks.mjs";
 
 const MODULE_ID = "dh-adversary-creator";
-const DEFAULT_FEATURE_ICON = "icons/magic/symbols/star-solid-gold.webp";
+const DEFAULT_FEATURE_ICON = "systems/daggerheart/assets/icons/documents/items/stars-stack.svg";
 const DEFAULT_ACTOR_ICON = "icons/svg/skull.svg";
 const EXPERIENCE_RANGE_LABEL_BY_TIER = {
   1: "+2",
@@ -13,6 +13,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   _editingActorId = null;
+  _featureDescParseTimers = new Map();
 
   _state = {
     img: DEFAULT_ACTOR_ICON,
@@ -61,7 +62,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
   static DEFAULT_OPTIONS = {
     id: "dh-adversary-creator",
     tag: "form",
-    window: { title: "Quick Adversary Creator", icon: "fas fa-skull-crossbones", resizable: true },
+    window: { title: "1-Minute Adversaries", icon: "fas fa-skull-crossbones", resizable: true },
     position: { width: 740, height: 660 },
     actions: {
       autofill: AdversaryCreatorApp._onAutofill,
@@ -78,6 +79,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       createAdversary: AdversaryCreatorApp._onCreateAdversary,
       resetForm: AdversaryCreatorApp._onResetForm,
       toggleAction: AdversaryCreatorApp._onToggleAction,
+      addCommonFeatures: AdversaryCreatorApp._onAddCommonFeatures,
     },
   };
 
@@ -114,6 +116,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       submitLabel: this._editingActorId ? "Save Changes" : "Create Adversary",
       isFeaturesTab: s.rightTab !== "effects",
       isEffectsTab: s.rightTab === "effects",
+      roleTip: ROLE_TIPS[s.role] ?? null,
     };
   }
 
@@ -139,8 +142,14 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       textarea.addEventListener("input", (ev) => {
         const idx = Number(ev.target.dataset.descIndex);
         this._state.features[idx].description = ev.target.value;
-        this._autoDetectTags(idx);
-        this._renderFeatureToggles(idx);
+        const prevTimer = this._featureDescParseTimers.get(idx);
+        if (prevTimer) clearTimeout(prevTimer);
+        const timer = setTimeout(() => {
+          this._featureDescParseTimers.delete(idx);
+          this._autoDetectTags(idx);
+          this._renderFeatureToggles(idx);
+        }, 150);
+        this._featureDescParseTimers.set(idx, timer);
       });
     });
   }
@@ -157,25 +166,41 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     const prevDamageRolls = Array.isArray(f.damageRolls) ? [...f.damageRolls] : [];
     const prevReactionRolls = Array.isArray(f.reactionRolls) ? [...f.reactionRolls] : [];
     const prevToggles = foundry.utils.deepClone(f.toggles ?? {});
+    const prevDamageByKey = new Map(prevDamageRolls.map(d => [`${d.formula}|${d.type}`, d]));
+    const prevReactionByTrait = new Map(prevReactionRolls.map(r => [r.trait, r]));
 
-    // Detect damage:XdY+Z [type] patterns (multiple supported)
-    const damageRegex = /damage:(\d+d\d+(?:[+-]\d+)?)(?:\s+(phy|mag|physical|magical))?/gi;
+    // Detect damage patterns:
+    // Tag syntax:    damage:2d8+4 phy
+    // Natural lang:  2d8+4 physical damage, 1d10+3 magic damage, deal 2d6 damage
+    const damagePatterns = [
+      // Tag syntax (backward compat)
+      /damage:(\d+d\d+(?:[+-]\d+)?)(?:\s+(phy|mag|physical|magical))?/gi,
+      // Natural language: "XdY+Z physical/magic damage" or "XdY+Z direct physical/magic damage"
+      /(\d+d\d+(?:\s*[+-]\s*\d+)?)\s+(?:direct\s+)?(physical|magic(?:al)?)\s+damage/gi,
+      // Plain: "XdY+Z damage" (no type = physical)
+      /(\d+d\d+(?:\s*[+-]\s*\d+)?)\s+damage/gi,
+    ];
     const newDamageRolls = [];
-    let m;
-    while ((m = damageRegex.exec(desc)) !== null) {
-      const formula = m[1];
-      const type = m[2] && m[2].startsWith("mag") ? "mag" : "phy";
-      // Preserve enabled state if this exact roll/type already existed
-      const existing = f.damageRolls.find(d => d.formula === formula && d.type === type);
-      if (!newDamageRolls.some(d => d.formula === formula && d.type === type)) {
+    const seenDamageKeys = new Set();
+    for (const regex of damagePatterns) {
+      let m;
+      while ((m = regex.exec(desc)) !== null) {
+        const formula = m[1].replace(/\s/g, "");
+        const rawType = m[2] || "";
+        const type = rawType.startsWith("mag") ? "mag" : "phy";
+        const key = `${formula}|${type}`;
+        if (seenDamageKeys.has(key)) continue;
+        seenDamageKeys.add(key);
+        const existing = prevDamageByKey.get(key);
         newDamageRolls.push({ formula, type, enabled: existing ? existing.enabled : true });
       }
     }
     if (mergeWithExisting) {
       for (const d of prevDamageRolls) {
-        if (!newDamageRolls.some(n => n.formula === d.formula && n.type === d.type)) {
-          newDamageRolls.push(d);
-        }
+        const key = `${d.formula}|${d.type}`;
+        if (seenDamageKeys.has(key)) continue;
+        seenDamageKeys.add(key);
+        newDamageRolls.push(d);
       }
     }
     f.damageRolls = newDamageRolls;
@@ -184,19 +209,21 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     const traits = ["strength", "instinct", "knowledge", "finesse", "presence", "agility"];
     const reactionRegex = /\b(strength|instinct|knowledge|finesse|presence|agility)\s+reaction(?:\s+rolls?)?\b/gi;
     const newReactionRolls = [];
+    const seenReactionTraits = new Set();
+    let m;
     while ((m = reactionRegex.exec(desc)) !== null) {
       const trait = m[1].toLowerCase();
       if (!traits.includes(trait)) continue;
-      const existing = f.reactionRolls.find(r => r.trait === trait);
-      if (!newReactionRolls.some(r => r.trait === trait)) {
-        newReactionRolls.push({ trait, enabled: existing ? existing.enabled : true });
-      }
+      if (seenReactionTraits.has(trait)) continue;
+      seenReactionTraits.add(trait);
+      const existing = prevReactionByTrait.get(trait);
+      newReactionRolls.push({ trait, enabled: existing ? existing.enabled : true });
     }
     if (mergeWithExisting) {
       for (const r of prevReactionRolls) {
-        if (!newReactionRolls.some(n => n.trait === r.trait)) {
-          newReactionRolls.push(r);
-        }
+        if (seenReactionTraits.has(r.trait)) continue;
+        seenReactionTraits.add(r.trait);
+        newReactionRolls.push(r);
       }
     }
     f.reactionRolls = newReactionRolls;
@@ -329,6 +356,33 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this._readForm();
     this._state.features.push(AdversaryCreatorApp._newFeature());
     this.render();
+  }
+
+  static _onAddCommonFeatures() {
+    this._readForm();
+    const role = this._state.role;
+    const templates = ROLE_FEATURES[role];
+    if (!templates || templates.length === 0) {
+      ui.notifications.info(`No common features defined for role: ${role}`);
+      return;
+    }
+    // Remove any empty placeholder features first
+    this._state.features = this._state.features.filter(f => f.name.trim() || f.description.trim());
+    // Add each common feature
+    for (const tmpl of templates) {
+      const f = AdversaryCreatorApp._newFeature();
+      f.name = tmpl.name;
+      f.formType = tmpl.formType;
+      f.description = tmpl.description;
+      f._mergeAutoDetectOnFirstRender = true;
+      this._state.features.push(f);
+    }
+    // Ensure at least one feature exists
+    if (this._state.features.length === 0) {
+      this._state.features.push(AdversaryCreatorApp._newFeature());
+    }
+    this.render();
+    ui.notifications.info(`Added ${templates.length} common ${role} feature(s).`);
   }
 
   static _onRemoveFeature(event, target) {
@@ -491,17 +545,27 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
   static _buildFeatureItem(feature, featureIndex) {
     const actions = {};
     let desc = feature.description;
-
     // Process markdown-style formatting: ***bold italic***, **italic**, *bold*
     // (Daggerheart SRD uses bold for dice, bold for game terms)
     desc = desc.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
     desc = desc.replace(/\*\*(.+?)\*\*/g, '<em>$1</em>');
     desc = desc.replace(/\*(.+?)\*/g, '<strong>$1</strong>');
 
-    // Replace only the damage tag prefix with an inline roll; leave surrounding natural language intact.
+    // Replace damage: tag prefix with inline rolls
     desc = desc.replace(/damage:(\d+d\d+(?:[+-]\d+)?)/gi, (match, formula) => {
       return `[[/r ${formula}]]`;
     });
+
+    // Wrap dice notation that appears before "damage" (natural language) as inline rolls
+    // e.g. "2d8+4 physical damage" → "[[/r 2d8+4]] physical damage"
+    desc = desc.replace(/\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\b(?=\s+(?:direct\s+)?(?:physical|magic(?:al)?)\s+damage)/gi, (match, formula) => {
+      const clean = formula.replace(/\s/g, "");
+      return `[[/r ${clean}]]`;
+    });
+
+    // Wrap any remaining bare dice not already in [[ ]]
+    desc = desc.replace(/\b(\d+d\d+\s*[+-]\s*\d+)\b(?![^\[]*\]\])/g, (m, f) => `[[/r ${f.replace(/\s/g, "")}]]`);
+    desc = desc.replace(/\b(\d+d\d+)\b(?!\s*[+-])(?![^\[]*\]\])/g, '[[/r $1]]');
 
     // Build enabled actions from toggles
     if (feature.toggles.attackRoll) {
@@ -962,3 +1026,11 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     return tmp.textContent?.replace(/\n{3,}/g, "\n\n").trim() ?? "";
   }
 }
+
+
+
+
+
+
+
+

@@ -1,102 +1,96 @@
-# Daggerheart: Quick Adversary Creator
+# Daggerheart: 1-Minute Adversaries
 
-A FoundryVTT module for the **Foundryborne Daggerheart** system that provides a form-based UI for quickly creating adversary actors — directly inside Foundry. No exporting, no copy-pasting. Fill out the form, click Create, and the adversary appears in your world.
+A FoundryVTT module for the Foundryborne Daggerheart system that helps you build adversaries fast inside Foundry.
 
-## Features
+Create or edit adversary actors with benchmark autofill, feature generation helpers, inline damage roll tagging, and one-click item/action creation.
 
-- **Form-based UI** with tabbed sections: Identity, Combat Stats, Attack, Features
-- **Auto-fill from benchmarks** — select a Tier and Role, click one button, and all stats populate with midpoint values from the official Daggerheart SRD guidelines
-- **Benchmark reference panels** showing recommended stat ranges for every Tier/Role combination
-- **Feature builder** — add unlimited Passive, Action, and Reaction features, including Fear Features
-- **Direct actor creation** — creates a real adversary Actor with embedded feature Items in your world
-- **Auto-opens the new sheet** after creation so you can review and tweak
-- **Accessible from the Actor Directory** via a "Create Adversary" button, or via Ctrl+Shift+N
+## What It Does
 
-## Installation
+- Build adversaries from a focused form UI inside Foundry
+- Auto-fill combat stats from Daggerheart benchmark ranges by tier and role
+- Add multiple experiences
+- Build unlimited features (passive/action/reaction) with optional custom images
+- Auto-detect feature actions from natural language (Attack Roll, Spend Fear, Mark Stress)
+- Auto-detect reaction rolls (for example, Instinct Reaction)
+- Auto-detect damage rolls and generate damage action buttons
+- Support multiple damage rolls in a single feature description
+- Convert `damage:2d8+4 physical` style tags into inline rolls in feature text
+- Toggle generated action buttons on/off before creation (green enabled, red disabled)
+- Create new adversaries or quick-edit existing adversary actors
+- Manage common resistance/immunity effects from the UI (physical/magical)
 
-### Manual Install
-1. Download or clone this module into your `{userData}/Data/modules/` directory
-2. The folder should be named `dh-adversary-creator`
-3. Restart Foundry and enable the module in your world
+## Highlights
 
-### File Structure
-```
-dh-adversary-creator/
-├── module.json
-├── scripts/
-│   ├── module.mjs              # Entry point, hooks, button injection
-│   ├── adversary-creator-form.mjs  # FormApplication class
-│   └── benchmarks.mjs          # Stat benchmark data from the SRD
-├── templates/
-│   └── adversary-creator.hbs   # Handlebars form template
-├── styles/
-│   └── adversary-creator.css   # Styles matching Daggerheart aesthetic
-└── lang/
-    └── en.json                 # Localization
-```
+### Natural-language feature detection
+Type plain text in a feature description and the app suggests actions automatically.
+
+Examples:
+- `The adversary makes an attack...` -> Attack Roll pill
+- `...spend Fear to...` -> Spend Fear pill
+- `...mark Stress to...` -> Mark Stress pill
+- `...make an Instinct reaction roll...` -> Instinct Reaction pill
+
+Core adversary pills (Attack Roll, Spend Fear, Mark Stress) are always shown and start red until detected/enabled.
+Dynamic pills (damage/reaction) appear only when detected.
+
+### Damage roll tagging
+`damage:` is the primary inline damage tag syntax and supports multiple rolls/types in one description.
+
+Examples:
+- `Enemy attacks dealing damage:2d8+4 physical.`
+- `On a hit, deal damage:1d10+2 magical and damage:1d6 physical.`
+
+These are converted into Foundry inline rolls in the feature description and corresponding damage actions can be generated.
 
 ## Usage
 
-1. **Enable the module** in your world's Module Management
-2. Open the **Actor Directory** sidebar — you'll see a "Create Adversary" button
-3. Or press **Ctrl+Shift+N** to open the creator
-4. Fill in the form:
-   - Set **Tier** and **Role**, then click **Auto-fill from Benchmarks** to populate stats
-   - Customize any values as needed
-   - Add features in the Features tab
-5. Click **Create Adversary** — the actor is created and its sheet opens
+1. Enable the module in your world.
+2. Open the Actor Directory and click `Create Adversary`.
+3. Or press `Ctrl+Shift+N` to open 1-Minute Adversaries.
+4. Set tier/role and click `Auto-fill`.
+5. Add details, experiences, and features.
+6. Review generated pills (green = enabled, red = disabled).
+7. Click `Create Adversary`.
 
-### Macro Access
-You can also open the creator from a macro:
+### Quick Edit Existing Adversaries
+Use the module's quick edit entry point on adversary sheets (when available) to reopen the same builder with current actor data loaded.
+
+## Macro API
+
 ```js
 game.modules.get("dh-adversary-creator")?.api?.open();
 ```
 
-## Calibrating Field Names
+Open for an existing adversary actor:
 
-Since the Foundryborne system's internal data model is not publicly documented, this module makes its best effort to populate the correct field paths. If some fields aren't appearing on the adversary sheet after creation, you'll need to calibrate the field names:
-
-### Step 1: Inspect an existing adversary
-Open your browser's developer console (F12) and run:
 ```js
-const adv = game.actors.find(a => a.type === "adversary");
-console.log(JSON.stringify(adv.toObject(), null, 2));
+game.modules.get("dh-adversary-creator")?.api?.openForActor(actor);
 ```
 
-### Step 2: Note the field paths
-Look at the `system` object in the output. The key paths you need are:
-- Difficulty (e.g., `system.difficulty.value` or `system.difficulty`)
-- Thresholds (e.g., `system.thresholds.major` or `system.damageThresholds.major`)
-- HP (e.g., `system.hp.value` / `system.hp.max`)
-- Stress (e.g., `system.stress.value` / `system.stress.max`)
-- Attack modifier, weapon data, experience, etc.
-- Feature item type name (e.g., `"feature"`, `"adversaryFeature"`, `"action"`)
+## Installation
 
-### Step 3: Update the module
-Edit `scripts/adversary-creator-form.mjs` — in the `_buildSystemData()` and `_buildFeatureItems()` methods, adjust the `setPath()` calls to match the exact paths from your inspection.
+### Manual Install
+1. Download or clone this repo into `{Foundry User Data}/Data/modules/`
+2. Ensure the folder is named `dh-adversary-creator`
+3. Restart Foundry and enable the module in your world
+
+### Manifest Install (if using your hosted manifest)
+Use the `module.json` manifest URL from this repository's release branch.
+
+## Notes
+
+- Benchmark templates in `scripts/benchmarks.mjs` now use `@Lookup[@name]` directly.
+- Feature descriptions preserve natural text and only rely on explicit `damage:` tagging for inline damage insertion.
+- Default generated feature icon uses the Daggerheart stars-stack icon.
 
 ## Supported Roles & Tiers
 
-All 10 adversary roles across all 4 tiers with full benchmark data:
-
-| Role | Battle Points | Description |
-|------|:---:|-------------|
-| Bruiser | 4 | Big hits, throw people around |
-| Horde | 2 | Large groups of individually weak creatures |
-| Leader | 3 | Command others, boost allies |
-| Minion | 1/group | Defeated on any damage |
-| Ranged | 2 | Far attacks, pressure the party |
-| Skulk | 2 | Skirmisher, close quarters harrier |
-| Solo | 5 | Formidable challenge for a whole party |
-| Standard | 2 | Core forces, simple abilities |
-| Social | 1 | Interpersonal encounters |
-| Support | 1 | Debuffs, ally enhancement |
+Includes benchmark data for the standard Daggerheart adversary role/tier combinations used by the builder.
 
 ## Credits
 
-- Benchmark data derived from the **Daggerheart SRD** (©Critical Role, LLC) under the Darrington Press Community Gaming License
-- Adversary creation guide benchmarks from **RightKnighttoFight's Guide to Making Custom Adversaries**
-- Built for the **Foundryborne** Daggerheart system for FoundryVTT
+- Daggerheart SRD benchmark guidance (Critical Role / Darrington Press licensing applies)
+- Foundryborne Daggerheart system for FoundryVTT
 
 ## License
 

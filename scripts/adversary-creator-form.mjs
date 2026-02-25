@@ -19,7 +19,7 @@ export class AdversaryCreatorForm extends FormApplication {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       id: "dhac-adversary-creator",
-      title: game.i18n?.localize("DHAC.Title") ?? "Quick Adversary Creator",
+      title: game.i18n?.localize("DHAC.Title") ?? "1-Minute Adversaries",
       template: `modules/${MODULE_ID}/templates/adversary-creator.hbs`,
       classes: ["dhac-form", "daggerheart"],
       width: 680,
@@ -369,3 +369,4 @@ export class AdversaryCreatorForm extends FormApplication {
     // no-op — we use our own create button
   }
 }
+

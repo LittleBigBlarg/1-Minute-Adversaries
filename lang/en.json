@@ -1,6 +1,6 @@
 {
   "DHAC": {
-    "Title": "Quick Adversary Creator",
+    "Title": "1-Minute Adversaries",
     "Button": "Create Adversary",
     "CreateButton": "Create Adversary",
     "ResetButton": "Reset",
@@ -40,7 +40,8 @@
       "Created": "Created adversary: {name}",
       "Error": "Error creating adversary: {error}",
       "NoName": "Please enter an adversary name.",
-      "FieldDiscovery": "Adversary Creator: Detected Foundryborne data model."
+      "FieldDiscovery": "1-Minute Adversaries: Detected Foundryborne data model."
     }
   }
 }
+

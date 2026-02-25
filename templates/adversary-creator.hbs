@@ -36,11 +36,41 @@
     </div>
     <div class="dhac-topbar-field dhac-topbar-role">
       <label>Role</label>
-      <select name="role">
-        {{#each roles}}
-        <option value="{{this}}" {{#if (eq this ../role)}}selected{{/if}}>{{capitalize this}}</option>
-        {{/each}}
-      </select>
+      <div class="dhac-role-select-row">
+        <select name="role">
+          {{#each roles}}
+          <option value="{{this}}" {{#if (eq this ../role)}}selected{{/if}}>{{capitalize this}}</option>
+          {{/each}}
+        </select>
+        {{#if roleTip}}
+        <div class="dhac-role-tip-wrapper">
+          <button type="button" class="dhac-role-tip-btn" title="Role design tips">
+            <i class="fas fa-circle-info"></i>
+          </button>
+          <div class="dhac-role-tip-popup">
+            <div class="dhac-role-tip-header">{{capitalize role}} Tips</div>
+            <div class="dhac-role-tip-summary">{{roleTip.summary}}</div>
+            <div class="dhac-role-tip-section">
+              <span class="dhac-role-tip-label">Damage:</span> {{roleTip.damage}}
+            </div>
+            <div class="dhac-role-tip-section">
+              <span class="dhac-role-tip-label">Features:</span> {{roleTip.features}}
+            </div>
+            <div class="dhac-role-tip-section">
+              <span class="dhac-role-tip-label">Common:</span> {{roleTip.common}}
+            </div>
+            <div class="dhac-role-tip-section">
+              <span class="dhac-role-tip-label">Experiences:</span> {{roleTip.experiences}}
+            </div>
+            {{#if roleTip.tip}}
+            <div class="dhac-role-tip-extra">
+              <i class="fas fa-lightbulb"></i> {{roleTip.tip}}
+            </div>
+            {{/if}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
     </div>
     <button type="button" data-action="autofill" class="dhac-btn-autofill" title="Auto-fill stats from SRD benchmarks">
       <i class="fas fa-magic"></i> Auto-fill
@@ -206,7 +236,7 @@
             </select>
             <button type="button" data-action="removeFeature" data-feature-id="{{this.id}}" class="dhac-btn-remove" title="Remove"><i class="fas fa-trash"></i></button>
           </div>
-          <textarea name="feature.{{@index}}.description" data-desc-index="{{@index}}" rows="3" placeholder="Describe the feature. Buttons auto-populate from detected text. Use damage:dice+modifier DamageType for damage tags (DamageType = physical or magical) and reaction:attribute for reaction tags.">{{this.description}}</textarea>
+          <textarea name="feature.{{@index}}.description" data-desc-index="{{@index}}" rows="3" placeholder="Write naturally — buttons auto-detect from your text. Example: Mark a Stress to make an attack against all targets within Close range dealing 2d8+4 physical damage. Each target must make an Agility Reaction Roll.">{{this.description}}</textarea>
           <div class="dhac-toggles-row" data-toggles-index="{{@index}}">
             {{!-- Toggles rendered by JS _onRender --}}
           </div>
@@ -214,7 +244,10 @@
         {{/each}}
       </div>
 
-      <button type="button" data-action="addFeature" class="dhac-btn-add-bottom"><i class="fas fa-plus"></i> Add Feature</button>
+      <div class="dhac-btn-row-bottom">
+        <button type="button" data-action="addFeature" class="dhac-btn-add-bottom"><i class="fas fa-plus"></i> Add Feature</button>
+        <button type="button" data-action="addCommonFeatures" class="dhac-btn-common-features" title="Add common features for the selected role"><i class="fas fa-book-open"></i> Add Common Features</button>
+      </div>
       {{/if}}
 
       {{#if isEffectsTab}}

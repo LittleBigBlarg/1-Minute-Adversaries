@@ -74,3 +74,138 @@ export function rangeStr(range) {
   if (!range) return "None";
   return `${range[0]}–${range[1]}`;
 }
+
+/**
+ * Role design tips from RightKnighttoFight's Guide to Making Custom Adversaries v1.6
+ * Each entry: { summary, damage, features, common, experiences }
+ */
+export const ROLE_TIPS = {
+  bruiser: {
+    summary: "Throw people around and make big hits.",
+    damage: "Attacks can hit Major usually and Severe when rolling well. Tend to use d10–d12 damage dice.",
+    features: "Features include attacks that hit multiple enemies and move PCs around the battlefield.",
+    common: "Ramp Up, Momentum",
+    experiences: "Crusher, Charger, Intimidation, Throw",
+    tip: "Use d8 (more consistent) with higher modifiers or d12 (heavier hits) with lower modifiers.",
+  },
+  horde: {
+    summary: "A large group that fights as one, weakening as they take damage.",
+    damage: "Attacks can hit Major and Severe when rolling well vs non-guardians until half HP. Use d6–d10.",
+    features: "When splitting damage (Horde passive), aim for a dice pool that halves the average. (Ex. 2d10+2 → 1d10+1)",
+    common: "Horde (X)",
+    experiences: "Pack Tactics, Swarm, Overwhelm",
+  },
+  leader: {
+    summary: "Command others to attack the PCs.",
+    damage: "Attacks do slightly lower damage than a Bruiser, using d8–d10.",
+    features: "Fear abilities that spotlight 1d4 allies at half damage are common.",
+    common: "Momentum, Activate Allies, Relentless, Tactician",
+    experiences: "Commander, Leadership, Backstabber, For the Realm!",
+  },
+  minion: {
+    summary: "Individually weak creatures defeated in one hit.",
+    damage: "Attacks increase by tier. No thresholds.",
+    features: "Minion(X) passive determines how many are defeated per X damage. Group Attack spends Fear.",
+    common: "Minion (X), Group Attack",
+    experiences: "Most minions have simple or no experiences.",
+  },
+  ranged: {
+    summary: "Attack from far away and keep pressure on the party.",
+    damage: "Slightly lower average damage than a Bruiser, using d8–d10.",
+    features: "Spend Fear to attack multiple targets. Mark Stress to increase damage of attacks.",
+    common: "Opportunity Shot, Opportunist, Hit Multiple Targets",
+    experiences: "Hunter, Survival, Tracker, Trapper",
+  },
+  skulk: {
+    summary: "Harry the party as a skirmisher in close quarters.",
+    damage: "Minor to Major damage on standard attacks, but features will usually do more. Use d6–d8.",
+    features: "Features to disorient PCs (ambush features) or impart status effects are common.",
+    common: "Ambush, Cloaked",
+    experiences: "Camouflage, Stealth, Rabblerouser, Intrusion",
+  },
+  solo: {
+    summary: "Present a formidable challenge to a whole party, with or without support.",
+    damage: "Extremely high damage capacity using d10–d12, or even d20.",
+    features: "Reactions and Countdowns are key. Solos using phases should have lower HP and thresholds.",
+    common: "Relentless, Momentum, Countdowns",
+    experiences: "Never Enough!, I See You, Vengeful",
+    tip: "Solo is a deceptive name — they usually still need allies. See OneBoxyLlama's Single Adversary Encounter advice.",
+  },
+  standard: {
+    summary: "Simple abilities; they make up the core of your forces.",
+    damage: "Can usually hit Major thresholds on spellcasters. Use d6–d8 damage dice.",
+    features: "Most features include a way to harry or distract a PC or augment ATK or Damage.",
+    common: "Too Many to Handle, Pack Tactics",
+    experiences: "Many standards don't have experiences, or share them with other forces.",
+  },
+  social: {
+    summary: "Bespoke features — deviation from stat norms is expected.",
+    damage: "Low combat damage. Numbers should represent the social role.",
+    features: "Imagine their role in the fiction and what pressure they can put on a character. Consider a social phase and combat phase with a phase change.",
+    common: "Mockery, Scapegoat, Bend Ears",
+    experiences: "Socialite, Negotiator, Aristocrat, Administration",
+    tip: "You do NOT need to be on-tier for social adversaries. Their tier should be tied to their place in the fiction.",
+  },
+  support: {
+    summary: "Cause debuffs and aid allies. Essentially a weaker Leader.",
+    damage: "Minor to Major damage, but features can do more. Stress is usually higher.",
+    features: "Features to cause PCs to mark Stress or lose Hope are common, as well as features that change the environment or help other units.",
+    common: "AOE Condition, Curse, Buff Allies",
+    experiences: "Magical Knowledge, Lore",
+  },
+};
+
+
+/**
+ * Common features per role from the Feature Library in Making Custom Adversaries v1.6.
+ * @Lookup[@name] will be replaced with @Lookup[@name] at creation time.
+ */
+export const ROLE_FEATURES = {
+  bruiser: [
+    { name: "Momentum", formType: "reaction", description: "When the @Lookup[@name] makes a successful attack against a PC, you gain a Fear." },
+    { name: "Ramp Up", formType: "passive", description: "You must spend a Fear to spotlight the @Lookup[@name]. While spotlighted, they can make their standard attack against all targets within range." },
+    { name: "Slow", formType: "passive", description: "When you spotlight the @Lookup[@name] and they don't have a token on their stat block, they can't act yet. Place a token on their stat block and describe what they're preparing to do. When you spotlight the @Lookup[@name] and they have a token on their stat block, clear the token and they can act." },
+    { name: "Terrifying", formType: "passive", description: "When the @Lookup[@name] makes a successful attack, all PCs within Far range lose a Hope and you gain a Fear." },
+  ],
+  horde: [
+    { name: "Horde (<damage>)", formType: "passive", description: "When the @Lookup[@name] has marked half or more of their HP, their standard attack deals <damage> physical damage instead." },
+  ],
+  leader: [
+    { name: "Terrifying", formType: "passive", description: "When the @Lookup[@name] makes a successful attack, all PCs within Far range lose a Hope and you gain a Fear." },
+    { name: "Relentless (X)", formType: "passive", description: "The @Lookup[@name] can be spotlighted up to X times per GM turn. Spend Fear as usual to spotlight them." },
+    { name: "Activate Allies", formType: "action", description: "Spend X Fear to spotlight 1d4 allies. Attacks they make while spotlighted in this way deal half damage." },
+    { name: "Call Reinforcements", formType: "action", description: "Once per scene, mark a Stress to summon a <A different adversary>, which appears at <Range> range." },
+    { name: "Tactician", formType: "action", description: "When you spotlight the @Lookup[@name], mark a Stress to also spotlight two allies within Close range." },
+    { name: "Momentum", formType: "reaction", description: "When the @Lookup[@name] makes a successful attack against a PC, you gain a Fear." },
+  ],
+  minion: [
+    { name: "Minion (X)", formType: "passive", description: "The @Lookup[@name] is defeated when they take any damage. For every X damage a PC deals to the @Lookup[@name], defeat an additional Minion within range the attack would succeed against." },
+    { name: "Group Attack", formType: "action", description: "Spend a Fear to choose a target and spotlight all @Lookup[@name] within Close range of them. Those Minions move into Melee range of the target and make one shared attack roll. On a success, they deal <standard damage> physical damage each. Combine this damage." },
+  ],
+  ranged: [
+    { name: "Opportunity Shot", formType: "reaction", description: "When another adversary deals damage to a target within Far range of the @Lookup[@name], you can mark a Stress to add the <extra damage> to the damage roll." },
+    { name: "Opportunist", formType: "passive", description: "When two or more adversaries are within Very Close range of a creature, all damage the @Lookup[@name] deals to that creature is doubled." },
+    { name: "Hit Multiple Targets", formType: "reaction", description: "Spend a Fear to make an attack against # targets within Far range. Targets the @Lookup[@name] succeeds against take <reduced damage>." },
+  ],
+  skulk: [
+    { name: "Ambush", formType: "action", description: "While Hidden, make an attack against a target within <Range> range. On a success, deal <increased damage> physical damage." },
+    { name: "Cloaked", formType: "action", description: "Become Hidden until after the @Lookup[@name]'s next attack. Attacks made while Hidden from this feature have advantage." },
+  ],
+  solo: [
+    { name: "Relentless (X)", formType: "passive", description: "The @Lookup[@name] can be spotlighted up to X times per GM turn. Spend Fear as usual to spotlight them." },
+    { name: "Countdown to Something Bad", formType: "reaction", description: "Countdown (Loop 1d6). When the <countdown activation condition>, activate the countdown. When it triggers, the @Lookup[@name] <does something powerful (make an attack, force a Reaction Roll)>. All targets that <it succeeds against/fail> have a negative outcome." },
+    { name: "Momentum", formType: "reaction", description: "When the @Lookup[@name] makes a successful attack against a PC, you gain a Fear." },
+  ],
+  standard: [
+    { name: "Too Many to Handle", formType: "passive", description: "When the @Lookup[@name] is within Melee range of a creature and at least one other @Lookup[@name] is within Close range, all attacks against that creature have advantage." },
+    { name: "Pack Tactics", formType: "passive", description: "If the @Lookup[@name] makes a successful standard attack and another @Lookup[@name] is within Melee range of the target, deal <extra damage> physical damage instead of their standard damage and you gain a Fear." },
+  ],
+  social: [
+    { name: "Mockery", formType: "action", description: "Mark a Stress to say something mocking and force a target within Close range to make a Presence Reaction Roll. On a failure, the target must mark 2 Stress and is Vulnerable until the scene ends." },
+    { name: "Scapegoat", formType: "action", description: "Spend a Fear and target a PC. The @Lookup[@name] convinces a crowd or prominent individual that the target is the cause of their current conflict or misfortune." },
+  ],
+  support: [
+    { name: "AOE Condition", formType: "action", description: "Spend a Fear to make an attack against all targets within Very Close range. Targets the @Lookup[@name] succeeds against become Restrained and Vulnerable. A target can break free, ending both conditions, with a successful Trait Roll." },
+  ],
+};
+

@@ -3,7 +3,7 @@ import { AdversaryCreatorApp } from "./adversary-creator-app.mjs";
 const MODULE_ID = "dh-adversary-creator";
 
 Hooks.once("init", () => {
-  console.log(`${MODULE_ID} | Initializing Quick Adversary Creator`);
+  console.log(`${MODULE_ID} | Initializing 1-Minute Adversaries`);
 
   Handlebars.registerHelper("eq", (a, b) => a === b);
   Handlebars.registerHelper("capitalize", (str) => {
@@ -13,8 +13,8 @@ Hooks.once("init", () => {
   Handlebars.registerHelper("increment", (val) => Number(val) + 1);
 
   game.keybindings.register(MODULE_ID, "openCreator", {
-    name: "Open Adversary Creator",
-    hint: "Opens the Quick Adversary Creator form",
+    name: "Open 1-Minute Adversaries",
+    hint: "Opens the 1-Minute Adversaries form",
     editable: [{ key: "KeyN", modifiers: ["Shift", "Control"] }],
     onDown: () => { new AdversaryCreatorApp().render(true); },
     restricted: true,
@@ -174,3 +174,4 @@ Hooks.on("renderActorSheet", (app, html) => {
   const root = html instanceof HTMLElement ? html : (html?.[0] ?? app?.element);
   injectQuickEditButton(app, root);
 });
+
