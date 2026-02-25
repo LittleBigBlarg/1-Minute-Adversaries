@@ -44,7 +44,9 @@ game.modules.get("one-minute-adversaries")?.api?.openForActor(actor);
 
 Use this manifest URL in Foundry's Install Module dialog:
 
-`https://raw.githubusercontent.com/LittleBigBlarg/DH-Adversary-Builder/main/module.json`
+```text
+https://raw.githubusercontent.com/LittleBigBlarg/DH-Adversary-Builder/main/module.json
+```
 
 ## Acknowledgments
 
