@@ -46,9 +46,14 @@ Use this manifest URL in Foundry's Install Module dialog:
 
 `https://raw.githubusercontent.com/LittleBigBlarg/DH-Adversary-Builder/main/module.json`
 
+## Acknowledgments
+
+- Benchmark suggestions and custom adversary guidance in this project are based in part on RightKnightsToFight's work on making custom adversaries:
+  - https://docs.google.com/document/d/12g-obIkdGJ_iLL19bS0oKPDDvPbPI9pWUiFqGw8ED88/edit?tab=t.0#heading=h.mdjo15f06zjv
 ## License
 
 MIT
+
 
 
 
