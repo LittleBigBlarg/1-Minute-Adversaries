@@ -36,8 +36,8 @@ A FoundryVTT module for the Foundryborne Daggerheart system that helps you creat
 ## Macro API
 
 ```js
-game.modules.get("dh-adversary-creator")?.api?.open();
-game.modules.get("dh-adversary-creator")?.api?.openForActor(actor);
+game.modules.get("one-minute-adversaries")?.api?.open();
+game.modules.get("one-minute-adversaries")?.api?.openForActor(actor);
 ```
 
 ## Installation
@@ -53,6 +53,7 @@ Use this manifest URL in Foundry's Install Module dialog:
 ## License
 
 MIT
+
 
 
 

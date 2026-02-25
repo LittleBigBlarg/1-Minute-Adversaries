@@ -1,6 +1,6 @@
 import { AdversaryCreatorApp } from "./adversary-creator-app.mjs";
 
-const MODULE_ID = "dh-adversary-creator";
+const MODULE_ID = "one-minute-adversaries";
 
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Initializing 1-Minute Adversaries`);
@@ -174,4 +174,5 @@ Hooks.on("renderActorSheet", (app, html) => {
   const root = html instanceof HTMLElement ? html : (html?.[0] ?? app?.element);
   injectQuickEditButton(app, root);
 });
+
 

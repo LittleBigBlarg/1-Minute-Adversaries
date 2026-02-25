@@ -1,6 +1,6 @@
 import { BENCHMARKS, ROLES, RANGES, mid, rangeStr } from "./benchmarks.mjs";
 
-const MODULE_ID = "dh-adversary-creator";
+const MODULE_ID = "one-minute-adversaries";
 
 /**
  * AdversaryCreatorForm - A FormApplication that provides a form-based UI
@@ -369,4 +369,5 @@ export class AdversaryCreatorForm extends FormApplication {
     // no-op — we use our own create button
   }
 }
+
 

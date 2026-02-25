@@ -1,8 +1,18 @@
 import { BENCHMARKS, ROLES, RANGES, EXPERIENCE_BY_TIER, mid, rangeStr, ROLE_TIPS, ROLE_FEATURES } from "./benchmarks.mjs";
 
-const MODULE_ID = "dh-adversary-creator";
+const MODULE_ID = "one-minute-adversaries";
 const DEFAULT_FEATURE_ICON = "systems/daggerheart/assets/icons/documents/items/stars-stack.svg";
 const DEFAULT_ACTOR_ICON = "icons/svg/skull.svg";
+const DEFAULT_ATTACK_ICON = "icons/magic/death/skull-humanoid-white-blue.webp";
+const FONT_SETTINGS_STORAGE_KEY = `${MODULE_ID}.fontSettings`;
+const DEFAULT_FONT_SETTINGS = Object.freeze({
+  nameInput: 14,
+  featureName: 13,
+  featureType: 12,
+  featureDescription: 13,
+  featurePills: 11,
+  labels: 10,
+});
 const EXPERIENCE_RANGE_LABEL_BY_TIER = {
   1: "+2",
   2: "+2-3",
@@ -14,6 +24,8 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   _editingActorId = null;
   _featureDescParseTimers = new Map();
+  _fontSettings = AdversaryCreatorApp._loadFontSettings();
+  _fontSettingsPanelOpen = false;
 
   _state = {
     img: DEFAULT_ACTOR_ICON,
@@ -22,6 +34,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     description: "", motives: "",
     difficulty: 12, majorThreshold: 6, severeThreshold: 10,
     hp: 4, stress: 3, atk: 1,
+    weaponImg: DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
     weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
     weaponDamageType: "physical",
@@ -59,8 +72,28 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     };
   }
 
+  static _sanitizeFontSettings(value = {}) {
+    const parsed = (value && typeof value === "object") ? value : {};
+    const out = {};
+    for (const [key, fallback] of Object.entries(DEFAULT_FONT_SETTINGS)) {
+      const n = Number(parsed[key]);
+      out[key] = Number.isFinite(n) ? Math.max(9, Math.min(24, Math.round(n))) : fallback;
+    }
+    return out;
+  }
+
+  static _loadFontSettings() {
+    try {
+      const raw = globalThis.localStorage?.getItem(FONT_SETTINGS_STORAGE_KEY);
+      if (!raw) return { ...DEFAULT_FONT_SETTINGS };
+      return AdversaryCreatorApp._sanitizeFontSettings(JSON.parse(raw));
+    } catch {
+      return { ...DEFAULT_FONT_SETTINGS };
+    }
+  }
+
   static DEFAULT_OPTIONS = {
-    id: "dh-adversary-creator",
+    id: "one-minute-adversaries",
     tag: "form",
     window: { title: "1-Minute Adversaries", icon: "fas fa-skull-crossbones", resizable: true },
     position: { width: 740, height: 660 },
@@ -73,7 +106,9 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       pickActorImage: AdversaryCreatorApp._onPickActorImage,
       resetActorImage: AdversaryCreatorApp._onResetActorImage,
       pickFeatureImage: AdversaryCreatorApp._onPickFeatureImage,
+      pickAttackImage: AdversaryCreatorApp._onPickAttackImage,
       resetFeatureImage: AdversaryCreatorApp._onResetFeatureImage,
+      resetAttackImage: AdversaryCreatorApp._onResetAttackImage,
       switchRightTab: AdversaryCreatorApp._onSwitchRightTab,
       toggleEffectFlag: AdversaryCreatorApp._onToggleEffectFlag,
       createAdversary: AdversaryCreatorApp._onCreateAdversary,
@@ -122,6 +157,9 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
 
   _onRender(context, options) {
     const html = this.element;
+    if (!html) return;
+    this._applyFontSettingsCssVars();
+    this._ensureHeaderFontSettingsControl();
     html.querySelector("[name='tier']")?.addEventListener("change", () => { this._readForm(); this.render(); });
     html.querySelector("[name='role']")?.addEventListener("change", () => { this._readForm(); this.render(); });
 
@@ -152,6 +190,140 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         this._featureDescParseTimers.set(idx, timer);
       });
     });
+  }
+
+  _saveFontSettings() {
+    try {
+      globalThis.localStorage?.setItem(FONT_SETTINGS_STORAGE_KEY, JSON.stringify(this._fontSettings));
+    } catch {
+      // Ignore storage failures; live UI updates still work.
+    }
+  }
+
+  _applyFontSettingsCssVars() {
+    const el = this.element;
+    if (!el) return;
+    const target = el.querySelector(".dhac-layout") ?? el;
+    target.style.setProperty("--dhac-font-name-input", `${this._fontSettings.nameInput}px`);
+    target.style.setProperty("--dhac-font-feature-name", `${this._fontSettings.featureName}px`);
+    target.style.setProperty("--dhac-font-feature-type", `${this._fontSettings.featureType}px`);
+    target.style.setProperty("--dhac-font-feature-description", `${this._fontSettings.featureDescription}px`);
+    target.style.setProperty("--dhac-font-feature-pills", `${this._fontSettings.featurePills}px`);
+    target.style.setProperty("--dhac-font-labels", `${this._fontSettings.labels}px`);
+  }
+
+  _ensureHeaderFontSettingsControl() {
+    const content = this.element;
+    if (!content) return;
+    const appWindow = content.closest(".application");
+    const header = appWindow?.querySelector(".window-header");
+    if (!header) return;
+
+    let wrap = header.querySelector(".dhac-header-settings-wrap");
+    if (!wrap) {
+      wrap = document.createElement("div");
+      wrap.className = "dhac-header-settings-wrap";
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "header-control dhac-header-settings-btn";
+      button.title = "Font size settings";
+      button.setAttribute("aria-label", "Font size settings");
+      button.innerHTML = `<i class="fas fa-cog"></i>`;
+
+      const panel = document.createElement("div");
+      panel.className = "dhac-header-settings-panel";
+      panel.innerHTML = `
+        <div class="dhac-font-settings-title">Font Sizes</div>
+        <div class="dhac-font-settings-grid">
+          ${this._fontSettingRowHtml("Adversary Name", "nameInput")}
+          ${this._fontSettingRowHtml("Feature Name", "featureName")}
+          ${this._fontSettingRowHtml("Feature Type", "featureType")}
+          ${this._fontSettingRowHtml("Feature Text", "featureDescription")}
+          ${this._fontSettingRowHtml("Feature Buttons", "featurePills")}
+          ${this._fontSettingRowHtml("Small Labels", "labels")}
+        </div>
+        <button type="button" class="dhac-font-settings-reset" data-font-action="reset">Reset Defaults</button>
+      `;
+
+      button.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        this._fontSettingsPanelOpen = !this._fontSettingsPanelOpen;
+        this._syncFontSettingsPanel(wrap);
+      });
+
+      const stopHeaderDrag = (ev) => ev.stopPropagation();
+      panel.addEventListener("click", stopHeaderDrag);
+      panel.addEventListener("pointerdown", stopHeaderDrag, true);
+      panel.addEventListener("mousedown", stopHeaderDrag, true);
+      panel.addEventListener("input", (ev) => {
+        const input = ev.target;
+        if (!(input instanceof HTMLInputElement)) return;
+        if (input.dataset.fontKey === undefined) return;
+        this._fontSettings[input.dataset.fontKey] = Math.max(9, Math.min(24, Number(input.value) || 0));
+        this._applyFontSettingsCssVars();
+        this._saveFontSettings();
+        this._syncFontSettingsPanel(wrap);
+      });
+      panel.addEventListener("click", (ev) => {
+        const target = ev.target?.closest?.("[data-font-action='reset']");
+        if (!target) return;
+        this._fontSettings = { ...DEFAULT_FONT_SETTINGS };
+        this._applyFontSettingsCssVars();
+        this._saveFontSettings();
+        this._syncFontSettingsPanel(wrap);
+      });
+
+      const closePanel = (ev) => {
+        if (!this._fontSettingsPanelOpen) return;
+        if (!wrap.contains(ev.target)) {
+          this._fontSettingsPanelOpen = false;
+          this._syncFontSettingsPanel(wrap);
+        }
+      };
+      document.addEventListener("pointerdown", closePanel);
+      wrap._dhacClosePanelHandler = closePanel;
+
+      wrap.append(button, panel);
+      const closeBtn = header.querySelector(".header-control[data-action='close'], .header-control.close, [data-action='close'].header-control, .window-title + .header-control:last-child");
+      if (closeBtn && closeBtn !== wrap) header.insertBefore(wrap, closeBtn);
+      else header.append(wrap);
+    }
+
+    // Re-position on subsequent renders in case Foundry rebuilt/reordered header controls.
+    const closeBtn = header.querySelector(".header-control[data-action='close'], .header-control.close, [data-action='close'].header-control");
+    if (closeBtn && wrap.nextElementSibling !== closeBtn) {
+      header.insertBefore(wrap, closeBtn);
+    }
+    this._syncFontSettingsPanel(wrap);
+  }
+
+  _fontSettingRowHtml(label, key) {
+    return `
+      <label class="dhac-font-setting-row">
+        <span>${label}</span>
+        <input type="range" min="9" max="24" step="1" data-font-key="${key}">
+        <output data-font-output="${key}"></output>
+      </label>
+    `;
+  }
+
+  _syncFontSettingsPanel(wrap) {
+    if (!wrap) return;
+    wrap.classList.toggle("is-open", this._fontSettingsPanelOpen);
+    const button = wrap.querySelector(".dhac-header-settings-btn");
+    if (button) {
+      button.classList.toggle("is-open", this._fontSettingsPanelOpen);
+      button.setAttribute("aria-expanded", this._fontSettingsPanelOpen ? "true" : "false");
+    }
+
+    for (const [key, value] of Object.entries(this._fontSettings)) {
+      const input = wrap.querySelector(`input[data-font-key='${key}']`);
+      if (input && input.value !== String(value)) input.value = String(value);
+      const output = wrap.querySelector(`[data-font-output='${key}']`);
+      if (output) output.textContent = `${value}px`;
+    }
   }
 
   /**
@@ -303,6 +475,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     s.hp = Number(html.querySelector("[name='hp']")?.value) || 0;
     s.stress = Number(html.querySelector("[name='stress']")?.value) || 0;
     s.atk = Number(html.querySelector("[name='atk']")?.value) || 0;
+    s.weaponImg = html.querySelector("[name='weaponImg']")?.value ?? s.weaponImg;
     s.weaponName = html.querySelector("[name='weaponName']")?.value ?? s.weaponName;
     s.weaponRange = html.querySelector("[name='weaponRange']")?.value ?? s.weaponRange;
     s.weaponDamageDice = html.querySelector("[name='weaponDamageDice']")?.value ?? s.weaponDamageDice;
@@ -485,6 +658,20 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this.render();
   }
 
+  static _onPickAttackImage() {
+    this._readForm();
+    AdversaryCreatorApp._openImagePicker(this._state.weaponImg || DEFAULT_ATTACK_ICON, (path) => {
+      this._state.weaponImg = path || DEFAULT_ATTACK_ICON;
+      this.render();
+    });
+  }
+
+  static _onResetAttackImage() {
+    this._readForm();
+    this._state.weaponImg = DEFAULT_ATTACK_ICON;
+    this.render();
+  }
+
   static _onSwitchRightTab(event, target) {
     this._readForm();
     const tab = target.dataset.tab;
@@ -519,7 +706,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       description: "", motives: "",
       difficulty: 12, majorThreshold: 6, severeThreshold: 10,
       hp: 4, stress: 3, atk: 1,
-      weaponName: "", weaponRange: "melee",
+      weaponImg: DEFAULT_ATTACK_ICON,
+    weaponName: "", weaponRange: "melee",
       weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
       weaponDamageType: "physical",
       effects: {
@@ -764,7 +952,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         attack: {
           name: s.weaponName, range: s.weaponRange,
           roll: { type: "attack", bonus: String(s.atk) },
-          img: "icons/magic/death/skull-humanoid-white-blue.webp",
+          img: s.weaponImg || DEFAULT_ATTACK_ICON,
           damage: {
             parts: [{
               value: { custom: { enabled: false, formula: "" }, flatMultiplier: s.weaponDamageCount,
@@ -880,6 +1068,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       hp: Number(system.resources?.hitPoints?.max) || 0,
       stress: Number(system.resources?.stress?.max) || 0,
       atk: Number.parseInt(attack.roll?.bonus, 10) || 0,
+      weaponImg: attack.img ?? DEFAULT_ATTACK_ICON,
       weaponName: attack.name ?? "",
       weaponRange: attack.range ?? "melee",
       weaponDamageDice: damageValue.dice ?? "d8",
@@ -1025,7 +1214,23 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
 
     return tmp.textContent?.replace(/\n{3,}/g, "\n\n").trim() ?? "";
   }
+
+  async close(options) {
+    const content = this.element;
+    const headerWrap = content?.closest(".application")?.querySelector(".dhac-header-settings-wrap");
+    const closePanel = headerWrap?._dhacClosePanelHandler;
+    if (typeof closePanel === "function") {
+      document.removeEventListener("pointerdown", closePanel);
+    }
+    return super.close(options);
+  }
 }
+
+
+
+
+
+
 
 
 

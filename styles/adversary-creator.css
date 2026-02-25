@@ -1,16 +1,24 @@
 /* Scoped to application ID */
-#dh-adversary-creator {
+#one-minute-adversaries {
   min-width: 740px;
   background: #242424 !important;
   box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  overflow: visible;
 }
-#dh-adversary-creator .window-content {
+#one-minute-adversaries .window-content {
   padding: 0 !important;
   background: #242424;
+  overflow: visible;
 }
 
 /* --- Layout --- */
 .dhac-layout {
+  --dhac-font-name-input: 14px;
+  --dhac-font-feature-name: 13px;
+  --dhac-font-feature-type: 12px;
+  --dhac-font-feature-description: 13px;
+  --dhac-font-feature-pills: 11px;
+  --dhac-font-labels: 10px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -77,7 +85,7 @@
   border: 1px solid var(--color-border-light-2);
   padding: 6px 8px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: var(--dhac-font-name-input);
 }
 .dhac-topbar input:focus,
 .dhac-topbar select:focus {
@@ -154,7 +162,7 @@
   flex-direction: column;
 }
 .dhac-stat label {
-  font-size: 10px;
+  font-size: var(--dhac-font-labels);
   font-weight: bold;
   text-transform: uppercase;
   color: var(--color-text-light-5);
@@ -183,7 +191,7 @@
   flex: 1;
 }
 .dhac-field label {
-  font-size: 10px;
+  font-size: var(--dhac-font-labels);
   font-weight: bold;
   text-transform: uppercase;
   color: var(--color-text-light-5);
@@ -218,7 +226,7 @@
   margin-top: 2px;
 }
 .dhac-experiences-header label {
-  font-size: 10px;
+  font-size: var(--dhac-font-labels);
   font-weight: bold;
   text-transform: uppercase;
   color: var(--color-text-light-5);
@@ -394,7 +402,7 @@
   border: 1px solid var(--color-border-light-2);
   padding: 5px 6px;
   border-radius: 3px;
-  font-size: 13px;
+  font-size: var(--dhac-font-feature-name);
 }
 .dhac-feature-name-input:focus { border-color: var(--color-text-hyperlink); outline: none; }
 .dhac-feature-name-input::placeholder { color: rgba(255,255,255,0.25); }
@@ -405,7 +413,7 @@
   border: 1px solid var(--color-border-light-2);
   padding: 5px;
   border-radius: 3px;
-  font-size: 12px;
+  font-size: var(--dhac-font-feature-type);
 }
 .dhac-feature-type-select option { background: #242424; color: #e0e0e0; }
 .dhac-btn-remove {
@@ -425,7 +433,7 @@
   border: 1px solid var(--color-border-light-2);
   padding: 5px 6px;
   border-radius: 3px;
-  font-size: 13px;
+  font-size: var(--dhac-font-feature-description);
   font-family: var(--font-primary);
   resize: vertical;
   min-height: 46px;
@@ -538,7 +546,7 @@
 }
 
 .dhac-pill {
-  font-size: 11px;
+  font-size: var(--dhac-font-feature-pills);
   font-family: var(--font-primary);
   padding: 2px 8px;
   border-radius: 3px;
@@ -546,6 +554,95 @@
   transition: all 0.15s;
   border: 1px solid;
   line-height: 1.3;
+}
+
+/* --- Header Settings (Cog) --- */
+#one-minute-adversaries .window-header {
+  overflow: visible;
+}
+.dhac-header-settings-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.dhac-header-settings-btn {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+.dhac-header-settings-btn i {
+  font-size: 12px;
+}
+.dhac-header-settings-btn.is-open {
+  color: #ffd700;
+}
+.dhac-header-settings-panel {
+  display: none;
+  position: absolute;
+  top: -2px;
+  left: calc(100% + 8px);
+  width: 280px;
+  background: #1d1d1d;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+  z-index: 30;
+}
+.dhac-header-settings-wrap.is-open .dhac-header-settings-panel {
+  display: block;
+}
+.dhac-font-settings-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #d8d8d8;
+  margin-bottom: 6px;
+}
+.dhac-font-settings-grid {
+  display: grid;
+  gap: 6px;
+}
+.dhac-font-setting-row {
+  display: grid;
+  grid-template-columns: 1fr 96px 42px;
+  gap: 6px;
+  align-items: center;
+  color: #ddd;
+  font-size: 11px;
+}
+.dhac-font-setting-row span {
+  line-height: 1.2;
+}
+.dhac-font-setting-row input[type="range"] {
+  width: 100%;
+  margin: 0;
+}
+.dhac-font-setting-row output {
+  text-align: right;
+  color: #c6b58f;
+  font-weight: 600;
+  font-size: 11px;
+}
+.dhac-font-settings-reset {
+  width: 100%;
+  margin-top: 8px;
+  background: #2f2f2f;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #ddd;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.dhac-font-settings-reset:hover {
+  border-color: rgba(255, 215, 0, 0.45);
+  color: #fff2b0;
 }
 
 /* Off = Red */
@@ -760,3 +857,249 @@
 .dhac-btn-common-features i {
   margin-right: 4px;
 }
+
+/* --- Light Theme Support (Foundry light mode) --- */
+body.theme-light #one-minute-adversaries,
+.theme-light #one-minute-adversaries {
+  background: #f2efe8 !important;
+  box-shadow: 0 0 20px rgba(0,0,0,0.18);
+}
+body.theme-light #one-minute-adversaries .window-content,
+.theme-light #one-minute-adversaries .window-content {
+  background: #f2efe8;
+  color: #2a241b;
+}
+body.theme-light #one-minute-adversaries .dhac-section-title,
+.theme-light #one-minute-adversaries .dhac-section-title {
+  color: #3b3021;
+  border-bottom-color: rgba(80, 60, 35, 0.15);
+}
+body.theme-light #one-minute-adversaries .dhac-topbar,
+.theme-light #one-minute-adversaries .dhac-topbar,
+body.theme-light #one-minute-adversaries .dhac-footer,
+.theme-light #one-minute-adversaries .dhac-footer {
+  border-color: rgba(90, 70, 45, 0.18);
+}
+body.theme-light #one-minute-adversaries .dhac-topbar-field label,
+.theme-light #one-minute-adversaries .dhac-topbar-field label,
+body.theme-light #one-minute-adversaries .dhac-stat label,
+.theme-light #one-minute-adversaries .dhac-stat label,
+body.theme-light #one-minute-adversaries .dhac-field label,
+.theme-light #one-minute-adversaries .dhac-field label,
+body.theme-light #one-minute-adversaries .dhac-experiences-header label,
+.theme-light #one-minute-adversaries .dhac-experiences-header label,
+body.theme-light #one-minute-adversaries .dhac-effects-help,
+.theme-light #one-minute-adversaries .dhac-effects-help {
+  color: #6a5a46;
+}
+body.theme-light #one-minute-adversaries .dhac-range,
+.theme-light #one-minute-adversaries .dhac-range {
+  color: #9a6a00;
+  opacity: 0.95;
+}
+body.theme-light #one-minute-adversaries .dhac-topbar input,
+.theme-light #one-minute-adversaries .dhac-topbar input,
+body.theme-light #one-minute-adversaries .dhac-topbar select,
+.theme-light #one-minute-adversaries .dhac-topbar select,
+body.theme-light #one-minute-adversaries .dhac-stat input,
+.theme-light #one-minute-adversaries .dhac-stat input,
+body.theme-light #one-minute-adversaries .dhac-field input,
+.theme-light #one-minute-adversaries .dhac-field input,
+body.theme-light #one-minute-adversaries .dhac-field textarea,
+.theme-light #one-minute-adversaries .dhac-field textarea,
+body.theme-light #one-minute-adversaries .dhac-field select,
+.theme-light #one-minute-adversaries .dhac-field select,
+body.theme-light #one-minute-adversaries .dhac-feature-name-input,
+.theme-light #one-minute-adversaries .dhac-feature-name-input,
+body.theme-light #one-minute-adversaries .dhac-feature-type-select,
+.theme-light #one-minute-adversaries .dhac-feature-type-select,
+body.theme-light #one-minute-adversaries .dhac-feature-card textarea,
+.theme-light #one-minute-adversaries .dhac-feature-card textarea,
+body.theme-light #one-minute-adversaries .dhac-effect-value-input,
+.theme-light #one-minute-adversaries .dhac-effect-value-input {
+  background: rgba(255,255,255,0.8);
+  color: #221d16;
+  border-color: rgba(90, 70, 45, 0.18);
+}
+body.theme-light #one-minute-adversaries .dhac-topbar select option,
+.theme-light #one-minute-adversaries .dhac-topbar select option,
+body.theme-light #one-minute-adversaries .dhac-field select option,
+.theme-light #one-minute-adversaries .dhac-field select option,
+body.theme-light #one-minute-adversaries .dhac-feature-type-select option,
+.theme-light #one-minute-adversaries .dhac-feature-type-select option,
+body.theme-light #one-minute-adversaries .dhac-effect-value-input option,
+.theme-light #one-minute-adversaries .dhac-effect-value-input option {
+  background: #f4f1ea;
+  color: #221d16;
+}
+body.theme-light #one-minute-adversaries .dhac-feature-card,
+.theme-light #one-minute-adversaries .dhac-feature-card {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(90, 70, 45, 0.16);
+}
+body.theme-light #one-minute-adversaries .dhac-right-tab,
+.theme-light #one-minute-adversaries .dhac-right-tab,
+body.theme-light #one-minute-adversaries .dhac-btn-add,
+.theme-light #one-minute-adversaries .dhac-btn-add,
+body.theme-light #one-minute-adversaries .dhac-btn-add-bottom,
+.theme-light #one-minute-adversaries .dhac-btn-add-bottom,
+body.theme-light #one-minute-adversaries .dhac-btn-add-inline,
+.theme-light #one-minute-adversaries .dhac-btn-add-inline,
+body.theme-light #one-minute-adversaries .dhac-btn-reset,
+.theme-light #one-minute-adversaries .dhac-btn-reset {
+  background: #ece8dd;
+  color: #3a2f23;
+  border-color: rgba(90, 70, 45, 0.2);
+}
+body.theme-light #one-minute-adversaries .dhac-right-tab:hover,
+.theme-light #one-minute-adversaries .dhac-right-tab:hover,
+body.theme-light #one-minute-adversaries .dhac-btn-add:hover,
+.theme-light #one-minute-adversaries .dhac-btn-add:hover,
+body.theme-light #one-minute-adversaries .dhac-btn-add-bottom:hover,
+.theme-light #one-minute-adversaries .dhac-btn-add-bottom:hover,
+body.theme-light #one-minute-adversaries .dhac-btn-add-inline:hover,
+.theme-light #one-minute-adversaries .dhac-btn-add-inline:hover {
+  background: #e4ded0;
+  color: #241d15;
+}
+body.theme-light #one-minute-adversaries .dhac-right-tab.is-active,
+.theme-light #one-minute-adversaries .dhac-right-tab.is-active {
+  background: rgba(40, 160, 40, 0.12);
+  color: #205c20;
+  border-color: rgba(40, 160, 40, 0.35);
+}
+body.theme-light #one-minute-adversaries .dhac-feature-image-btn,
+.theme-light #one-minute-adversaries .dhac-feature-image-btn,
+body.theme-light #one-minute-adversaries .dhac-actor-image-btn,
+.theme-light #one-minute-adversaries .dhac-actor-image-btn,
+body.theme-light #one-minute-adversaries .dhac-feature-image-reset-btn,
+.theme-light #one-minute-adversaries .dhac-feature-image-reset-btn {
+  background: rgba(255,255,255,0.75);
+  border-color: rgba(90, 70, 45, 0.18);
+  color: #5b4b39;
+}
+body.theme-light #one-minute-adversaries .dhac-effects-group,
+.theme-light #one-minute-adversaries .dhac-effects-group {
+  border-top-color: rgba(90, 70, 45, 0.12);
+}
+body.theme-light #one-minute-adversaries .dhac-effects-group-title,
+.theme-light #one-minute-adversaries .dhac-effects-group-title {
+  color: #8b6508;
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle,
+.theme-light #one-minute-adversaries .dhac-effect-toggle {
+  color: #2a241b;
+  background: rgba(180, 40, 40, 0.08);
+  border-color: rgba(180, 40, 40, 0.22);
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle:hover,
+.theme-light #one-minute-adversaries .dhac-effect-toggle:hover {
+  background: rgba(180, 40, 40, 0.13);
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle.is-on,
+.theme-light #one-minute-adversaries .dhac-effect-toggle.is-on {
+  background: rgba(40, 160, 40, 0.12);
+  border-color: rgba(40, 160, 40, 0.3);
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle-state,
+.theme-light #one-minute-adversaries .dhac-effect-toggle-state {
+  color: #6a5a46;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-create,
+.theme-light #one-minute-adversaries .dhac-btn-create {
+  background: #3a6b3a;
+  border-color: #3fa43f;
+  color: #fff;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-create:hover,
+.theme-light #one-minute-adversaries .dhac-btn-create:hover {
+  background: #447b44;
+}
+body.theme-light #one-minute-adversaries .dhac-role-tip-btn,
+.theme-light #one-minute-adversaries .dhac-role-tip-btn {
+  color: #b07b00;
+}
+body.theme-light #one-minute-adversaries .dhac-role-tip-popup,
+.theme-light #one-minute-adversaries .dhac-role-tip-popup {
+  background: #fffdf7;
+  color: #2c2318;
+  border-color: rgba(176, 123, 0, 0.35);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.16);
+}
+body.theme-light #one-minute-adversaries .dhac-role-tip-popup::before,
+.theme-light #one-minute-adversaries .dhac-role-tip-popup::before {
+  background: #fffdf7;
+  border-top-color: rgba(176, 123, 0, 0.35);
+  border-left-color: rgba(176, 123, 0, 0.35);
+}
+body.theme-light #one-minute-adversaries .dhac-role-tip-header,
+.theme-light #one-minute-adversaries .dhac-role-tip-header {
+  color: #9a6a00;
+  border-bottom-color: rgba(176, 123, 0, 0.16);
+}
+body.theme-light #one-minute-adversaries .dhac-role-tip-summary,
+.theme-light #one-minute-adversaries .dhac-role-tip-summary {
+  color: #6a5841;
+}
+body.theme-light #one-minute-adversaries .dhac-role-tip-label,
+.theme-light #one-minute-adversaries .dhac-role-tip-label {
+  color: #7b5a17;
+}
+body.theme-light #one-minute-adversaries .dhac-role-tip-extra,
+.theme-light #one-minute-adversaries .dhac-role-tip-extra {
+  color: #365636;
+  border-top-color: rgba(90, 70, 45, 0.12);
+}
+body.theme-light #one-minute-adversaries .dhac-btn-common-features,
+.theme-light #one-minute-adversaries .dhac-btn-common-features {
+  background: rgba(176, 123, 0, 0.06);
+  border-color: rgba(176, 123, 0, 0.28);
+  color: #8e6400;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-common-features:hover,
+.theme-light #one-minute-adversaries .dhac-btn-common-features:hover {
+  background: rgba(176, 123, 0, 0.12);
+  border-color: rgba(176, 123, 0, 0.4);
+  color: #6f4f00;
+}
+body.theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder,
+.theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder {
+  color: rgba(34, 29, 22, 0.45);
+}
+body.theme-light #one-minute-adversaries .dhac-header-settings-panel,
+.theme-light #one-minute-adversaries .dhac-header-settings-panel {
+  background: #fffdf7;
+  border-color: rgba(90, 70, 45, 0.18);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.16);
+}
+body.theme-light #one-minute-adversaries .dhac-font-settings-title,
+.theme-light #one-minute-adversaries .dhac-font-settings-title {
+  color: #5b4630;
+}
+body.theme-light #one-minute-adversaries .dhac-font-setting-row,
+.theme-light #one-minute-adversaries .dhac-font-setting-row {
+  color: #3a2f23;
+}
+body.theme-light #one-minute-adversaries .dhac-font-setting-row output,
+.theme-light #one-minute-adversaries .dhac-font-setting-row output {
+  color: #8e6400;
+}
+body.theme-light #one-minute-adversaries .dhac-font-settings-reset,
+.theme-light #one-minute-adversaries .dhac-font-settings-reset {
+  background: #ece8dd;
+  border-color: rgba(90, 70, 45, 0.2);
+  color: #3a2f23;
+}
+body.theme-light #one-minute-adversaries .dhac-font-settings-reset:hover,
+.theme-light #one-minute-adversaries .dhac-font-settings-reset:hover {
+  background: #e4ded0;
+  border-color: rgba(176, 123, 0, 0.35);
+  color: #241d15;
+}
+body.theme-light #one-minute-adversaries .dhac-col-stats::-webkit-scrollbar-thumb,
+.theme-light #one-minute-adversaries .dhac-col-stats::-webkit-scrollbar-thumb,
+body.theme-light #one-minute-adversaries .dhac-features-scroll::-webkit-scrollbar-thumb,
+.theme-light #one-minute-adversaries .dhac-features-scroll::-webkit-scrollbar-thumb {
+  background: rgba(80, 60, 35, 0.2);
+}
+

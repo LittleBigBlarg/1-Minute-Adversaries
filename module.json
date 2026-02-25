@@ -1,5 +1,5 @@
 {
-  "id": "dh-adversary-creator",
+  "id": "one-minute-adversaries",
   "title": "Daggerheart: 1-Minute Adversaries",
   "version": "1.0.0",
   "description": "Build or edit Daggerheart adversaries in Foundry with benchmark autofill, natural-language feature action detection, multi-experience support, and inline damage roll tagging.",
@@ -24,7 +24,7 @@
   },
   "esmodules": ["scripts/module.mjs"],
   "styles": ["styles/adversary-creator.css"],
-  "lang": [
+  "languages": [
     {
       "lang": "en",
       "name": "English",
@@ -35,3 +35,5 @@
   "manifest": "https://raw.githubusercontent.com/LittleBigBlarg/DH-Adversary-Builder/main/module.json",
   "download": "https://github.com/LittleBigBlarg/DH-Adversary-Builder/archive/refs/heads/main.zip"
 }
+
+
