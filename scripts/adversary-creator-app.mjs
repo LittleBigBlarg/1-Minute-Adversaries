@@ -96,7 +96,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     id: "one-minute-adversaries",
     tag: "form",
     window: { title: "1-Minute Adversaries", icon: "fas fa-skull-crossbones", resizable: true },
-    position: { width: 740, height: 660 },
+    position: { width: 820, height: 720 },
     actions: {
       autofill: AdversaryCreatorApp._onAutofill,
       addFeature: AdversaryCreatorApp._onAddFeature,
@@ -182,8 +182,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     };
 
     html.querySelectorAll("[data-desc-index]").forEach(textarea => {
-      // Size to fit existing content on first render
-      autosizeTextarea(textarea);
+      // Defer initial sizing so the browser has finished layout before measuring scrollHeight
+      requestAnimationFrame(() => autosizeTextarea(textarea));
 
       textarea.addEventListener("input", (ev) => {
         autosizeTextarea(ev.target);
