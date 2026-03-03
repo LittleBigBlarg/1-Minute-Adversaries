@@ -12,7 +12,11 @@
 #one-minute-adversaries .window-content {
   padding: 0 !important;
   background: transparent;
-  overflow: visible;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
 /* =============================================================
@@ -234,11 +238,13 @@
   flex: 1;
   overflow-y: auto;
   padding-right: 6px;
+  min-height: 0;
 }
 .dhac-col-features {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 /* =============================================================
@@ -574,6 +580,7 @@
   gap: 8px;
   padding-right: 4px;
   padding-top: 4px;
+  min-height: 0;
 }
 
 /* =============================================================
@@ -587,6 +594,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex-shrink: 0;
   transition: border-color var(--dhac-ease), background var(--dhac-ease);
   position: relative;
   overflow: hidden;
@@ -700,8 +708,9 @@
   border-radius: var(--dhac-radius-sm);
   font-size: var(--dhac-font-feature-description);
   font-family: var(--font-primary);
-  resize: vertical;
-  min-height: 52px;
+  resize: none;
+  overflow: hidden;
+  min-height: 32px;
   line-height: 1.55;
   transition: border-color var(--dhac-ease), box-shadow var(--dhac-ease);
 }

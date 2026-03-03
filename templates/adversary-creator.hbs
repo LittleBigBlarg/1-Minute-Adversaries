@@ -251,7 +251,7 @@
             </select>
             <button type="button" data-action="removeFeature" data-feature-id="{{this.id}}" class="dhac-btn-remove" title="Remove"><i class="fas fa-trash"></i></button>
           </div>
-          <textarea name="feature.{{@index}}.description" data-desc-index="{{@index}}" rows="3" placeholder="Write naturally — buttons auto-detect from your text. Example: Mark a Stress to make an attack against all targets within Close range dealing 2d8+4 physical damage. Each target must make an Agility Reaction Roll.">{{this.description}}</textarea>
+          <textarea name="feature.{{@index}}.description" data-desc-index="{{@index}}" rows="1" placeholder="Write naturally — buttons auto-detect from your text. Example: Mark a Stress to make an attack against all targets within Close range dealing 2d8+4 physical damage. Each target must make an Agility Reaction Roll.">{{this.description}}</textarea>
           <div class="dhac-toggles-row" data-toggles-index="{{@index}}">
             {{!-- Toggles rendered by JS _onRender --}}
           </div>
