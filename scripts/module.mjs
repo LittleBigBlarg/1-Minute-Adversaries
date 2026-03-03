@@ -20,6 +20,16 @@ Hooks.once("init", () => {
     restricted: true,
     precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
   });
+
+  game.settings.register(MODULE_ID, "injectSidebarButton", {
+    name: "Show 'Create Adversary' button in Actor sidebar",
+    hint: "Adds a quick-access button to the Actors tab header. Disable if it conflicts with other modules.",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    requiresReload: true,
+  });
 });
 
 Hooks.once("ready", () => {
@@ -37,6 +47,7 @@ Hooks.once("ready", () => {
 
 Hooks.on("renderActorDirectory", (app, html) => {
   if (!game.user.isGM) return;
+  if (!game.settings.get(MODULE_ID, "injectSidebarButton")) return;
   const root = html instanceof HTMLElement ? html : (html[0] ?? html);
   if (!root || root.querySelector(".dhac-create-adversary-btn")) return;
 

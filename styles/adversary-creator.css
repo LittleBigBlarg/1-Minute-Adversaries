@@ -273,6 +273,85 @@
 }
 
 /* =============================================================
+   NUMBER SPINNER BUTTONS
+   ============================================================= */
+
+/* Hide native browser spinners — we use custom ones */
+.dhac-stat input[type="number"]::-webkit-inner-spin-button,
+.dhac-stat input[type="number"]::-webkit-outer-spin-button,
+.dhac-field input[type="number"]::-webkit-inner-spin-button,
+.dhac-field input[type="number"]::-webkit-outer-spin-button,
+.dhac-experience-row input[type="number"]::-webkit-inner-spin-button,
+.dhac-experience-row input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  display: none;
+}
+.dhac-stat input[type="number"],
+.dhac-field input[type="number"],
+.dhac-experience-row input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Wrapper that holds input + stacked ▲▼ buttons */
+.dhac-spinner-wrap {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+}
+.dhac-spinner-wrap input {
+  flex: 1;
+  min-width: 0;
+  border-right: none !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* Stacked ▲ / ▼ column */
+.dhac-spinner-btns {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 18px;
+  border: 1px solid var(--dhac-border);
+  border-left: none;
+  border-radius: 0 var(--dhac-radius) var(--dhac-radius) 0;
+  overflow: hidden;
+  transition: border-color var(--dhac-ease);
+}
+.dhac-spinner-wrap:focus-within .dhac-spinner-btns {
+  border-color: var(--dhac-blue);
+}
+.dhac-spinner-btn {
+  flex: 1;
+  background: rgba(255,255,255,0.04);
+  border: none;
+  color: var(--dhac-text-faint);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background var(--dhac-ease), color var(--dhac-ease);
+  line-height: 1;
+}
+.dhac-spinner-btn i { font-size: 7px; pointer-events: none; }
+.dhac-spinner-inc {
+  border-bottom: 1px solid var(--dhac-border-subtle);
+}
+.dhac-spinner-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--dhac-text);
+}
+.dhac-spinner-btn:active {
+  background: rgba(59,130,246,0.18);
+  color: var(--dhac-blue);
+}
+
+/* Stat inputs: taller spinner buttons to match the large number */
+.dhac-stat .dhac-spinner-btns { flex: 0 0 20px; }
+.dhac-stat .dhac-spinner-btn i { font-size: 8px; }
+
+/* =============================================================
    BENCHMARK RANGE BADGES
    ============================================================= */
 .dhac-range {
@@ -994,6 +1073,9 @@
   transform: rotate(45deg);
 }
 .dhac-role-tip-wrapper:hover .dhac-role-tip-popup { display: block; }
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-popup { display: block; }
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-btn,
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-btn:hover { opacity: 1; color: var(--dhac-gold); }
 
 .dhac-role-tip-header {
   font-size: 11px;
@@ -1028,6 +1110,28 @@
   font-size: 11px;
 }
 .dhac-role-tip-extra i { color: var(--dhac-gold); margin-right: 4px; }
+
+.dhac-role-tip-link {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(245,158,11,0.12);
+}
+.dhac-role-tip-doc-link {
+  color: var(--dhac-gold-muted);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0.78;
+  text-decoration: none;
+  transition: opacity var(--dhac-ease);
+}
+.dhac-role-tip-doc-link i { font-size: 10px; flex-shrink: 0; }
+.dhac-role-tip-doc-link:hover {
+  opacity: 1;
+  color: var(--dhac-gold);
+  text-decoration: underline;
+}
 
 /* =============================================================
    HEADER SETTINGS (COG)

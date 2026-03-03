@@ -190,6 +190,87 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         this._featureDescParseTimers.set(idx, timer);
       });
     });
+
+    this._injectSpinners(html);
+    this._setupRoleTipPin(html);
+  }
+
+  /** Wrap all number inputs with custom ▲/▼ spinner buttons. */
+  _injectSpinners(html) {
+    const inputs = html.querySelectorAll(
+      ".dhac-stat input[type='number'], .dhac-field input[type='number'], .dhac-experience-row input[type='number']"
+    );
+    for (const input of inputs) {
+      if (input.closest(".dhac-spinner-wrap")) continue;
+
+      const wrap = document.createElement("div");
+      wrap.className = "dhac-spinner-wrap";
+
+      const btns = document.createElement("div");
+      btns.className = "dhac-spinner-btns";
+
+      const inc = document.createElement("button");
+      inc.type = "button";
+      inc.className = "dhac-spinner-btn dhac-spinner-inc";
+      inc.setAttribute("tabindex", "-1");
+      inc.innerHTML = `<i class="fas fa-chevron-up"></i>`;
+      inc.addEventListener("click", () => {
+        const step = Number(input.step) || 1;
+        input.value = String(Number(input.value || 0) + step);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+
+      const dec = document.createElement("button");
+      dec.type = "button";
+      dec.className = "dhac-spinner-btn dhac-spinner-dec";
+      dec.setAttribute("tabindex", "-1");
+      dec.innerHTML = `<i class="fas fa-chevron-down"></i>`;
+      dec.addEventListener("click", () => {
+        const step = Number(input.step) || 1;
+        const min = input.min !== "" ? Number(input.min) : -Infinity;
+        input.value = String(Math.max(min, Number(input.value || 0) - step));
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+
+      btns.append(inc, dec);
+      input.parentNode.insertBefore(wrap, input);
+      wrap.append(input, btns);
+    }
+  }
+
+  /** Handle click-to-pin on role tip popup and external doc link. */
+  _setupRoleTipPin(html) {
+    // Remove previous document listener if re-rendering
+    if (this._roleTipClickOutsideHandler) {
+      document.removeEventListener("pointerdown", this._roleTipClickOutsideHandler);
+      this._roleTipClickOutsideHandler = null;
+    }
+
+    const wrappers = html.querySelectorAll(".dhac-role-tip-wrapper");
+    if (!wrappers.length) return;
+
+    wrappers.forEach(wrapper => {
+      const btn = wrapper.querySelector(".dhac-role-tip-btn");
+      btn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        wrapper.classList.toggle("is-pinned");
+      });
+    });
+
+    // Click outside closes pinned popups
+    this._roleTipClickOutsideHandler = (e) => {
+      wrappers.forEach(wrapper => {
+        if (!wrapper.contains(e.target)) wrapper.classList.remove("is-pinned");
+      });
+    };
+    document.addEventListener("pointerdown", this._roleTipClickOutsideHandler);
+
+    // Open external doc link via window.open so Electron doesn't swallow it
+    html.querySelectorAll(".dhac-role-tip-doc-link").forEach(a => {
+      a.addEventListener("click", (e) => { e.preventDefault(); window.open(a.href, "_blank"); });
+    });
   }
 
   _saveFontSettings() {
@@ -1221,6 +1302,10 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     const closePanel = headerWrap?._dhacClosePanelHandler;
     if (typeof closePanel === "function") {
       document.removeEventListener("pointerdown", closePanel);
+    }
+    if (this._roleTipClickOutsideHandler) {
+      document.removeEventListener("pointerdown", this._roleTipClickOutsideHandler);
+      this._roleTipClickOutsideHandler = null;
     }
     return super.close(options);
   }
