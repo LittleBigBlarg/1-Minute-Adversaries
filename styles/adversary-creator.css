@@ -311,7 +311,9 @@
 .dhac-spinner-btns {
   display: flex;
   flex-direction: column;
-  flex: 0 0 18px;
+  flex: 0 0 16px;
+  height: 28px;
+  align-self: center;
   border: 1px solid var(--dhac-border);
   border-left: none;
   border-radius: 0 var(--dhac-radius) var(--dhac-radius) 0;
@@ -346,10 +348,6 @@
   background: rgba(59,130,246,0.18);
   color: var(--dhac-blue);
 }
-
-/* Stat inputs: taller spinner buttons to match the large number */
-.dhac-stat .dhac-spinner-btns { flex: 0 0 20px; }
-.dhac-stat .dhac-spinner-btn i { font-size: 8px; }
 
 /* =============================================================
    BENCHMARK RANGE BADGES
