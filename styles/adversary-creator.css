@@ -312,7 +312,6 @@
   display: flex;
   flex-direction: column;
   flex: 0 0 16px;
-  height: 28px;
   align-self: center;
   border: 1px solid var(--dhac-border);
   border-left: none;
@@ -324,7 +323,9 @@
   border-color: var(--dhac-blue);
 }
 .dhac-spinner-btn {
-  flex: 1;
+  flex: 0 0 14px;
+  height: 14px;
+  min-height: 0;
   background: rgba(255,255,255,0.04);
   border: none;
   color: var(--dhac-text-faint);
