@@ -12,7 +12,11 @@
 #one-minute-adversaries .window-content {
   padding: 0 !important;
   background: transparent;
-  overflow: visible;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
 /* =============================================================
