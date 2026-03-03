@@ -298,62 +298,21 @@
   -moz-appearance: textfield;
 }
 
-/* Wrapper that holds input + stacked ▲▼ buttons */
-.dhac-spinner-wrap {
-  display: flex;
-  align-items: stretch;
-  flex: 1;
-  min-width: 0;
-}
-.dhac-spinner-wrap input {
-  flex: 1;
-  min-width: 0;
-  border-right: none !important;
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
+/* Cursor hint that scroll-wheel changes the value */
+.dhac-stat input[type="number"]:hover,
+.dhac-field input[type="number"]:hover,
+.dhac-experience-row input[type="number"]:hover {
+  cursor: ns-resize;
 }
 
-/* Stacked ▲ / ▼ column */
-.dhac-spinner-btns {
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 16px;
-  align-self: center;
-  border: 1px solid var(--dhac-border);
-  border-left: none;
-  border-radius: 0 var(--dhac-radius) var(--dhac-radius) 0;
-  overflow: hidden;
-  transition: border-color var(--dhac-ease);
+/* Bump animation: brief scale-up + blue glow, then settle */
+@keyframes dhac-num-bump {
+  0%   { transform: scale(1);    box-shadow: none; }
+  35%  { transform: scale(1.07); box-shadow: 0 0 0 3px var(--dhac-blue-glow); }
+  100% { transform: scale(1);    box-shadow: none; }
 }
-.dhac-spinner-wrap:focus-within .dhac-spinner-btns {
-  border-color: var(--dhac-blue);
-}
-.dhac-spinner-btn {
-  flex: 0 0 14px;
-  height: 14px;
-  min-height: 0;
-  background: rgba(255,255,255,0.04);
-  border: none;
-  color: var(--dhac-text-faint);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: background var(--dhac-ease), color var(--dhac-ease);
-  line-height: 1;
-}
-.dhac-spinner-btn i { font-size: 7px; pointer-events: none; }
-.dhac-spinner-inc {
-  border-bottom: 1px solid var(--dhac-border-subtle);
-}
-.dhac-spinner-btn:hover {
-  background: rgba(255,255,255,0.1);
-  color: var(--dhac-text);
-}
-.dhac-spinner-btn:active {
-  background: rgba(59,130,246,0.18);
-  color: var(--dhac-blue);
+.dhac-num-bump {
+  animation: dhac-num-bump 0.2s ease-out forwards;
 }
 
 /* =============================================================

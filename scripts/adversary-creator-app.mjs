@@ -201,53 +201,26 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       });
     });
 
-    this._injectSpinners(html);
-    this._setupRoleTipPin(html);
-  }
-
-  /** Wrap all number inputs with custom ▲/▼ spinner buttons. */
-  _injectSpinners(html) {
-    const inputs = html.querySelectorAll(
+    // Mouse-wheel to nudge number inputs — scroll up = +1, scroll down = −1
+    html.querySelectorAll(
       ".dhac-stat input[type='number'], .dhac-field input[type='number'], .dhac-experience-row input[type='number']"
-    );
-    for (const input of inputs) {
-      if (input.closest(".dhac-spinner-wrap")) continue;
-
-      const wrap = document.createElement("div");
-      wrap.className = "dhac-spinner-wrap";
-
-      const btns = document.createElement("div");
-      btns.className = "dhac-spinner-btns";
-
-      const inc = document.createElement("button");
-      inc.type = "button";
-      inc.className = "dhac-spinner-btn dhac-spinner-inc";
-      inc.setAttribute("tabindex", "-1");
-      inc.innerHTML = `<i class="fas fa-chevron-up"></i>`;
-      inc.addEventListener("click", () => {
+    ).forEach(input => {
+      input.addEventListener("wheel", (ev) => {
+        ev.preventDefault();
         const step = Number(input.step) || 1;
-        input.value = String(Number(input.value || 0) + step);
-        input.dispatchEvent(new Event("input", { bubbles: true }));
+        const min  = input.min !== "" ? Number(input.min) : -Infinity;
+        const delta = ev.deltaY < 0 ? step : -step;
+        input.value = String(Math.max(min, Number(input.value || 0) + delta));
+        input.dispatchEvent(new Event("input",  { bubbles: true }));
         input.dispatchEvent(new Event("change", { bubbles: true }));
-      });
+        // Brief expand-and-settle animation for visual feedback
+        input.classList.remove("dhac-num-bump");
+        void input.offsetWidth; // force reflow to restart animation
+        input.classList.add("dhac-num-bump");
+      }, { passive: false });
+    });
 
-      const dec = document.createElement("button");
-      dec.type = "button";
-      dec.className = "dhac-spinner-btn dhac-spinner-dec";
-      dec.setAttribute("tabindex", "-1");
-      dec.innerHTML = `<i class="fas fa-chevron-down"></i>`;
-      dec.addEventListener("click", () => {
-        const step = Number(input.step) || 1;
-        const min = input.min !== "" ? Number(input.min) : -Infinity;
-        input.value = String(Math.max(min, Number(input.value || 0) - step));
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-
-      btns.append(inc, dec);
-      input.parentNode.insertBefore(wrap, input);
-      wrap.append(input, btns);
-    }
+    this._setupRoleTipPin(html);
   }
 
   /** Handle click-to-pin on role tip popup and external doc link. */
