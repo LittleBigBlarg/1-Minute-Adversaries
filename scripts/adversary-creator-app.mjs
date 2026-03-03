@@ -175,9 +175,19 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       this._renderFeatureToggles(i);
     }
 
-    // Listen to feature description changes for auto-detection
+    // Listen to feature description changes for auto-detection + auto-size
+    const autosizeTextarea = (el) => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    };
+
     html.querySelectorAll("[data-desc-index]").forEach(textarea => {
+      // Size to fit existing content on first render
+      autosizeTextarea(textarea);
+
       textarea.addEventListener("input", (ev) => {
+        autosizeTextarea(ev.target);
+
         const idx = Number(ev.target.dataset.descIndex);
         this._state.features[idx].description = ev.target.value;
         const prevTimer = this._featureDescParseTimers.get(idx);

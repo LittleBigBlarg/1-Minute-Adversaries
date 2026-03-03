@@ -630,8 +630,9 @@
   border-radius: var(--dhac-radius-sm);
   font-size: var(--dhac-font-feature-description);
   font-family: var(--font-primary);
-  resize: vertical;
-  min-height: 52px;
+  resize: none;
+  overflow: hidden;
+  min-height: 32px;
   line-height: 1.55;
   transition: border-color var(--dhac-ease), box-shadow var(--dhac-ease);
 }
