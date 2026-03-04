@@ -5,6 +5,8 @@ const DEFAULT_FEATURE_ICON = "systems/daggerheart/assets/icons/documents/items/s
 const DEFAULT_ACTOR_ICON = "icons/svg/skull.svg";
 const DEFAULT_ATTACK_ICON = "icons/magic/death/skull-humanoid-white-blue.webp";
 const FONT_SETTINGS_STORAGE_KEY = `${MODULE_ID}.fontSettings`;
+const GLASS_OPACITY_STORAGE_KEY = `${MODULE_ID}.glassOpacity`;
+const DEFAULT_GLASS_OPACITY = 65;
 const DEFAULT_FONT_SETTINGS = Object.freeze({
   nameInput: 14,
   featureName: 13,
@@ -334,6 +336,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     target.style.setProperty("--dhac-font-feature-description", `${this._fontSettings.featureDescription}px`);
     target.style.setProperty("--dhac-font-feature-pills", `${this._fontSettings.featurePills}px`);
     target.style.setProperty("--dhac-font-labels", `${this._fontSettings.labels}px`);
+    // Apply saved glass opacity
+    try {
+      const saved = globalThis.localStorage?.getItem(GLASS_OPACITY_STORAGE_KEY);
+      const val = saved !== null ? Math.max(10, Math.min(100, Number(saved))) : DEFAULT_GLASS_OPACITY;
+      el.style.setProperty("--dhac-glass-opacity", val / 100);
+    } catch {}
   }
 
   _ensureHeaderFontSettingsControl() {
@@ -358,7 +366,16 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       const panel = document.createElement("div");
       panel.className = "dhac-header-settings-panel";
       panel.innerHTML = `
-        <div class="dhac-font-settings-title">Font Sizes</div>
+        <div class="dhac-font-settings-title">Appearance</div>
+        <div class="dhac-font-settings-grid">
+          <label class="dhac-font-setting-row">
+            <span>Glass Opacity</span>
+            <input type="range" min="10" max="100" step="1" data-glass-key="opacity">
+            <output data-glass-output="opacity"></output>
+            <button type="button" class="dhac-setting-reset-btn" data-glass-reset="opacity" title="Reset to default"><i class="fas fa-rotate-left"></i></button>
+          </label>
+        </div>
+        <div class="dhac-font-settings-title" style="margin-top:10px">Font Sizes</div>
         <div class="dhac-font-settings-grid">
           ${this._fontSettingRowHtml("Adversary Name", "nameInput")}
           ${this._fontSettingRowHtml("Feature Name", "featureName")}
@@ -367,7 +384,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
           ${this._fontSettingRowHtml("Feature Buttons", "featurePills")}
           ${this._fontSettingRowHtml("Small Labels", "labels")}
         </div>
-        <button type="button" class="dhac-font-settings-reset" data-font-action="reset">Reset Defaults</button>
+        <button type="button" class="dhac-font-settings-reset" data-font-action="reset">Reset All Defaults</button>
       `;
 
       button.addEventListener("click", (ev) => {
@@ -384,18 +401,46 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       panel.addEventListener("input", (ev) => {
         const input = ev.target;
         if (!(input instanceof HTMLInputElement)) return;
-        if (input.dataset.fontKey === undefined) return;
-        this._fontSettings[input.dataset.fontKey] = Math.max(9, Math.min(24, Number(input.value) || 0));
-        this._applyFontSettingsCssVars();
-        this._saveFontSettings();
+        if (input.dataset.fontKey !== undefined) {
+          this._fontSettings[input.dataset.fontKey] = Math.max(9, Math.min(24, Number(input.value) || 0));
+          this._applyFontSettingsCssVars();
+          this._saveFontSettings();
+        } else if (input.dataset.glassKey !== undefined) {
+          const val = Math.max(10, Math.min(100, Number(input.value) || DEFAULT_GLASS_OPACITY));
+          this.element.style.setProperty("--dhac-glass-opacity", val / 100);
+          try { globalThis.localStorage?.setItem(GLASS_OPACITY_STORAGE_KEY, String(val)); } catch {}
+        }
         this._syncFontSettingsPanel(wrap);
       });
       panel.addEventListener("click", (ev) => {
-        const target = ev.target?.closest?.("[data-font-action='reset']");
-        if (!target) return;
+        // Per-row font reset
+        const fontReset = ev.target?.closest?.("[data-font-reset]");
+        if (fontReset) {
+          const key = fontReset.dataset.fontReset;
+          if (key in DEFAULT_FONT_SETTINGS) {
+            this._fontSettings[key] = DEFAULT_FONT_SETTINGS[key];
+            this._applyFontSettingsCssVars();
+            this._saveFontSettings();
+            this._syncFontSettingsPanel(wrap);
+          }
+          return;
+        }
+        // Per-row glass opacity reset
+        const glassReset = ev.target?.closest?.("[data-glass-reset]");
+        if (glassReset) {
+          this.element.style.setProperty("--dhac-glass-opacity", DEFAULT_GLASS_OPACITY / 100);
+          try { globalThis.localStorage?.removeItem(GLASS_OPACITY_STORAGE_KEY); } catch {}
+          this._syncFontSettingsPanel(wrap);
+          return;
+        }
+        // Reset all defaults
+        const resetAll = ev.target?.closest?.("[data-font-action='reset']");
+        if (!resetAll) return;
         this._fontSettings = { ...DEFAULT_FONT_SETTINGS };
         this._applyFontSettingsCssVars();
         this._saveFontSettings();
+        this.element.style.setProperty("--dhac-glass-opacity", DEFAULT_GLASS_OPACITY / 100);
+        try { globalThis.localStorage?.removeItem(GLASS_OPACITY_STORAGE_KEY); } catch {}
         this._syncFontSettingsPanel(wrap);
       });
 
@@ -429,6 +474,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         <span>${label}</span>
         <input type="range" min="9" max="24" step="1" data-font-key="${key}">
         <output data-font-output="${key}"></output>
+        <button type="button" class="dhac-setting-reset-btn" data-font-reset="${key}" title="Reset to default"><i class="fas fa-rotate-left"></i></button>
       </label>
     `;
   }
@@ -442,12 +488,26 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       button.setAttribute("aria-expanded", this._fontSettingsPanelOpen ? "true" : "false");
     }
 
+    // Sync font sliders
     for (const [key, value] of Object.entries(this._fontSettings)) {
       const input = wrap.querySelector(`input[data-font-key='${key}']`);
       if (input && input.value !== String(value)) input.value = String(value);
       const output = wrap.querySelector(`[data-font-output='${key}']`);
       if (output) output.textContent = `${value}px`;
     }
+
+    // Sync glass opacity slider
+    let glassVal = DEFAULT_GLASS_OPACITY;
+    try {
+      const saved = globalThis.localStorage?.getItem(GLASS_OPACITY_STORAGE_KEY);
+      if (saved !== null) glassVal = Math.max(10, Math.min(100, Number(saved)));
+    } catch {}
+    const glassInput = wrap.querySelector("input[data-glass-key='opacity']");
+    if (glassInput && glassInput.value !== String(glassVal)) glassInput.value = String(glassVal);
+    const glassOutput = wrap.querySelector("[data-glass-output='opacity']");
+    if (glassOutput) glassOutput.textContent = `${glassVal}%`;
+    // Apply to window on first open in case CSS default hasn't been overridden yet
+    if (this.element) this.element.style.setProperty("--dhac-glass-opacity", glassVal / 100);
   }
 
   /**
