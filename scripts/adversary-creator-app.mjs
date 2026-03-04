@@ -34,9 +34,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     description: "", motives: "",
     difficulty: 12, majorThreshold: 6, severeThreshold: 10,
     hp: 4, stress: 3, atk: 1,
+    minionPassiveValue: 4,
+    groupAttackDamage: 4, groupAttackType: "physical",
     weaponImg: DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
     weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
+    weaponDamageFlat: 4,
     weaponDamageType: "physical",
     effects: {
       physicalSeverityReductionEnabled: false,
@@ -51,6 +54,14 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     experiences: [AdversaryCreatorApp._newExperience()],
     features: [AdversaryCreatorApp._newFeature()],
   };
+
+  static _parseMinionDice(diceStr) {
+    if (!diceStr) return null;
+    const m = String(diceStr).match(/^(\d+)\s*[–-]\s*(\d+)/);
+    if (!m) return null;
+    const min = parseInt(m[1]), max = parseInt(m[2]);
+    return { rangeStr: `${min}-${max}`, mid: Math.round((min + max) / 2) };
+  }
 
   static _newExperience() {
     return { id: foundry.utils.randomID(), name: "", bonus: 2 };
@@ -115,6 +126,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       resetForm: AdversaryCreatorApp._onResetForm,
       toggleAction: AdversaryCreatorApp._onToggleAction,
       addCommonFeatures: AdversaryCreatorApp._onAddCommonFeatures,
+      toggleGroupAttackType: AdversaryCreatorApp._onToggleGroupAttackType,
     },
   };
 
@@ -152,6 +164,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       isFeaturesTab: s.rightTab !== "effects",
       isEffectsTab: s.rightTab === "effects",
       roleTip: ROLE_TIPS[s.role] ?? null,
+      isMinionRole: s.role === "minion",
+      minionDiceRangeStr: (() => {
+        if (s.role !== "minion") return "";
+        const parsed = AdversaryCreatorApp._parseMinionDice(BENCHMARKS.minion?.[s.tier]?.dice?.[0]);
+        return parsed?.rangeStr ?? "";
+      })(),
+      minionPassiveValue: s.minionPassiveValue,
     };
   }
 
@@ -161,7 +180,48 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this._applyFontSettingsCssVars();
     this._ensureHeaderFontSettingsControl();
     html.querySelector("[name='tier']")?.addEventListener("change", () => { this._readForm(); this.render(); });
-    html.querySelector("[name='role']")?.addEventListener("change", () => { this._readForm(); this.render(); });
+    html.querySelector("[name='role']")?.addEventListener("change", () => {
+      this._readForm();
+      // When switching to minion, seed minionPassiveValue from the benchmark if not yet set
+      if (this._state.role === "minion" && !this._state.minionPassiveValue) {
+        const parsed = AdversaryCreatorApp._parseMinionDice(BENCHMARKS.minion?.[this._state.tier]?.dice?.[0]);
+        if (parsed) {
+          this._state.minionPassiveValue = parsed.mid;
+          this._state.weaponDamageFlat = parsed.mid;
+          this._state.groupAttackDamage = parsed.mid;
+        }
+      }
+      this.render();
+    });
+
+    // Minion Passive Value: live-update pinned feature card name + description without full re-render
+    const minionPassiveInput = html.querySelector("[name='minionPassiveValue']");
+    if (minionPassiveInput) {
+      minionPassiveInput.addEventListener("input", () => {
+        const val = Math.max(0, Number(minionPassiveInput.value) || 0);
+        this._state.minionPassiveValue = val;
+        const xEl = html.querySelector(".dhac-pinned-x");
+        if (xEl) xEl.textContent = `(${val})`;
+        const midEl = html.querySelector(".dhac-pinned-passive-mid");
+        if (midEl) midEl.textContent = val;
+      });
+    }
+
+    // Group Attack: live-update pinned card when damage or type changes
+    const groupDmgInput = html.querySelector("[name='groupAttackDamage']");
+    const groupTypeSelect = html.querySelector("[name='groupAttackType']");
+    const updateGroupAttackCard = () => {
+      const dmg = Number(html.querySelector("[name='groupAttackDamage']")?.value) || 0;
+      const type = html.querySelector("[name='groupAttackType']")?.value ?? "physical";
+      this._state.groupAttackDamage = dmg;
+      this._state.groupAttackType = type;
+      const dmgEl = html.querySelector(".dhac-pinned-group-dmg");
+      if (dmgEl) dmgEl.textContent = dmg;
+      const typeEl = html.querySelector(".dhac-pinned-group-type");
+      if (typeEl) typeEl.textContent = type;
+    };
+    groupDmgInput?.addEventListener("input", updateGroupAttackCard);
+    groupTypeSelect?.addEventListener("change", updateGroupAttackCard);
 
     // Render initial toggle pills for all features
     for (let i = 0; i < this._state.features.length; i++) {
@@ -537,6 +597,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     s.majorThreshold = Number(html.querySelector("[name='majorThreshold']")?.value) || 0;
     s.severeThreshold = Number(html.querySelector("[name='severeThreshold']")?.value) || 0;
     s.hp = Number(html.querySelector("[name='hp']")?.value) || 0;
+    const minionPassiveEl = html.querySelector("[name='minionPassiveValue']");
+    if (minionPassiveEl) s.minionPassiveValue = Math.max(0, Number(minionPassiveEl.value) || 0);
     s.stress = Number(html.querySelector("[name='stress']")?.value) || 0;
     s.atk = Number(html.querySelector("[name='atk']")?.value) || 0;
     s.weaponImg = html.querySelector("[name='weaponImg']")?.value ?? s.weaponImg;
@@ -545,7 +607,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     s.weaponDamageDice = html.querySelector("[name='weaponDamageDice']")?.value ?? s.weaponDamageDice;
     s.weaponDamageCount = Number(html.querySelector("[name='weaponDamageCount']")?.value) || 1;
     s.weaponDamageBonus = Number(html.querySelector("[name='weaponDamageBonus']")?.value) || 0;
+    const flatEl = html.querySelector("[name='weaponDamageFlat']");
+    if (flatEl) s.weaponDamageFlat = Number(flatEl.value) || 0;
     s.weaponDamageType = html.querySelector("[name='weaponDamageType']")?.value ?? s.weaponDamageType;
+    const groupDmgEl = html.querySelector("[name='groupAttackDamage']");
+    if (groupDmgEl) s.groupAttackDamage = Number(groupDmgEl.value) || 0;
+    const groupTypeEl = html.querySelector("[name='groupAttackType']");
+    if (groupTypeEl) s.groupAttackType = groupTypeEl.value ?? s.groupAttackType;
     for (let i = 0; i < s.experiences.length; i++) {
       const e = s.experiences[i];
       e.name = html.querySelector(`[name='experience.${i}.name']`)?.value ?? e.name;
@@ -579,11 +647,18 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     s.atk = mid(benchmark.atk);
     for (const exp of s.experiences) exp.bonus = EXPERIENCE_BY_TIER[s.tier] || 2;
     if (benchmark.dice?.[0]) {
-      const m = benchmark.dice[0].match(/^(\d*)d(\d+)(?:\+(\d+))?$/);
-      if (m) {
-        s.weaponDamageCount = parseInt(m[1]) || 1;
-        s.weaponDamageDice = `d${m[2]}`;
-        s.weaponDamageBonus = parseInt(m[3]) || 0;
+      const diceStr = benchmark.dice[0];
+      const diceM = diceStr.match(/^(\d*)d(\d+)(?:\+(\d+))?$/);
+      const flatM = diceStr.match(/^(\d+)\s*[–-]\s*(\d+)/);
+      if (diceM) {
+        s.weaponDamageCount = parseInt(diceM[1]) || 1;
+        s.weaponDamageDice = `d${diceM[2]}`;
+        s.weaponDamageBonus = parseInt(diceM[3]) || 0;
+      } else if (flatM) {
+        const mid = Math.round((parseInt(flatM[1]) + parseInt(flatM[2])) / 2);
+        s.weaponDamageFlat = mid;
+        s.minionPassiveValue = mid;
+        s.groupAttackDamage = mid;
       }
     }
     this.render();
@@ -752,6 +827,23 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this.render();
   }
 
+  static _onToggleGroupAttackType(event, target) {
+    this._readForm();
+    const type = target.dataset.type;
+    if (!type) return;
+    this._state.groupAttackType = type;
+    // Update hidden input
+    const hidden = this.element?.querySelector("[name='groupAttackType']");
+    if (hidden) hidden.value = type;
+    // Update type span in description
+    const typeSpan = this.element?.querySelector(".dhac-pinned-group-type");
+    if (typeSpan) typeSpan.textContent = type;
+    // Swap button active states without full re-render
+    this.element?.querySelectorAll(".dhac-type-toggle").forEach(btn => {
+      btn.classList.toggle("is-on", btn.dataset.type === type);
+    });
+  }
+
   static _onResetForm() {
     if (this._editingActorId) {
       const actor = game.actors?.get(this._editingActorId);
@@ -770,9 +862,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       description: "", motives: "",
       difficulty: 12, majorThreshold: 6, severeThreshold: 10,
       hp: 4, stress: 3, atk: 1,
+      minionPassiveValue: 4,
+      groupAttackDamage: 4, groupAttackType: "physical",
       weaponImg: DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
       weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
+      weaponDamageFlat: 4,
       weaponDamageType: "physical",
       effects: {
         physicalSeverityReductionEnabled: false,
@@ -797,6 +892,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
   static _buildFeatureItem(feature, featureIndex) {
     const actions = {};
     let desc = feature.description;
+    // Convert <name> placeholder to Foundry's @Lookup tag
+    desc = desc.replace(/<name>/gi, "@Lookup[@name]");
     // Process markdown-style formatting: ***bold italic***, **italic**, *bold*
     // (Daggerheart SRD uses bold for dice, bold for game terms)
     desc = desc.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
@@ -1012,15 +1109,16 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         motivesAndTactics: s.motives,
         difficulty: s.difficulty,
         damageThresholds: { major: s.majorThreshold, severe: s.severeThreshold },
-        resources: { hitPoints: { max: s.hp }, stress: { max: s.stress } },
+        resources: { hitPoints: { max: s.role === "minion" ? 1 : s.hp }, stress: { max: s.stress } },
         attack: {
           name: s.weaponName, range: s.weaponRange,
           roll: { type: "attack", bonus: String(s.atk) },
           img: s.weaponImg || DEFAULT_ATTACK_ICON,
           damage: {
             parts: [{
-              value: { custom: { enabled: false, formula: "" }, flatMultiplier: s.weaponDamageCount,
-                dice: s.weaponDamageDice, bonus: s.weaponDamageBonus || null, multiplier: "flat" },
+              value: s.role === "minion"
+                ? { custom: { enabled: true, formula: String(s.weaponDamageFlat) }, multiplier: "flat", flatMultiplier: 1, dice: "d6", bonus: null }
+                : { custom: { enabled: false, formula: "" }, flatMultiplier: s.weaponDamageCount, dice: s.weaponDamageDice, bonus: s.weaponDamageBonus || null, multiplier: "flat" },
               type: [s.weaponDamageType], applyTo: "hitPoints",
             }],
             includeBase: false, direct: false,
@@ -1035,13 +1133,57 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         systemData.experiences[expId] = { name: exp.name.trim(), value: exp.bonus, description: "" };
       }
 
-      const items = s.features
-        .filter(f => f.name.trim() || f.description.trim()) // Include if they have name OR description
-        .map((f, i) => AdversaryCreatorApp._buildFeatureItem(f, i));
+      const autoItems = [];
+      if (s.role === "minion") {
+        const passiveVal = s.minionPassiveValue || 1;
+        const flatDmg = s.weaponDamageFlat;
+        const groupDmg = s.groupAttackDamage ?? flatDmg;
+        const groupType = s.groupAttackType ?? "physical";
+        const fearId = foundry.utils.randomID(16);
+        autoItems.push({
+          name: `Minion(${passiveVal})`,
+          type: "feature",
+          img: DEFAULT_FEATURE_ICON,
+          flags: { [MODULE_ID]: { autoMinion: true } },
+          system: {
+            featureForm: "passive",
+            description: `<p>This adversary is defeated when they take any damage. For every <strong>${passiveVal}</strong> damage a PC deals to this adversary, defeat an additional Minion within range the attack would succeed against.</p>`,
+          },
+        });
+        autoItems.push({
+          name: "Group Attack",
+          type: "feature",
+          img: DEFAULT_FEATURE_ICON,
+          flags: { [MODULE_ID]: { autoMinion: true } },
+          system: {
+            featureForm: "action",
+            description: `<p>Spend a Fear to choose a target and spotlight all adversaries within Close range of them. Those Minions move into Melee range of the target and make one shared attack roll. On a success, they deal [[/r ${groupDmg}]] ${groupType} damage each. Combine this damage.</p>`,
+            actions: {
+              [fearId]: {
+                type: "effect", _id: fearId, systemPath: "actions", baseAction: false,
+                description: "", chatDisplay: true, originItem: { type: "itemCollection" },
+                actionType: "action", triggers: [],
+                cost: [{ scalable: false, key: "fear", value: 1, itemId: null, step: null, consumeOnSuccess: false }],
+                uses: { value: null, max: "", recovery: null, consumeOnSuccess: false },
+                effects: [], target: { type: "any", amount: null },
+                name: "Spend Fear", range: "",
+              },
+            },
+          },
+        });
+      }
+
+      const items = [
+        ...autoItems,
+        ...s.features
+          .filter(f => f.name.trim() || f.description.trim())
+          .map((f, i) => AdversaryCreatorApp._buildFeatureItem(f, i)),
+      ];
 
       const actorData = {
         name: s.name.trim(), type: "adversary",
         system: systemData, items, effects: AdversaryCreatorApp._buildResistanceEffects(s.effects), img: s.img || DEFAULT_ACTOR_ICON,
+        ...(s.role === "minion" ? { flags: { [MODULE_ID]: { minionPassiveValue: s.minionPassiveValue, groupAttackDamage: s.groupAttackDamage, groupAttackType: s.groupAttackType } } } : {}),
       };
 
       if (this._editingActorId) {
@@ -1054,6 +1196,11 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
           name: actorData.name,
           type: actorData.type,
           system: actorData.system,
+          ...(s.role === "minion" ? {
+            [`flags.${MODULE_ID}.minionPassiveValue`]: s.minionPassiveValue,
+            [`flags.${MODULE_ID}.groupAttackDamage`]: s.groupAttackDamage,
+            [`flags.${MODULE_ID}.groupAttackType`]: s.groupAttackType,
+          } : {}),
         };
 
         for (const expId of oldExperienceIds) {
@@ -1115,7 +1262,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     }));
 
     const features = actor.items
-      .filter(item => item.type === "feature")
+      .filter(item => item.type === "feature" && !item.flags?.[MODULE_ID]?.autoMinion)
       .map((item, index) => this._featureStateFromItem(item, index));
 
     this._state = {
@@ -1130,6 +1277,9 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       majorThreshold: Number(system.damageThresholds?.major) || 0,
       severeThreshold: Number(system.damageThresholds?.severe) || 0,
       hp: Number(system.resources?.hitPoints?.max) || 0,
+      minionPassiveValue: Number(actor.flags?.[MODULE_ID]?.minionPassiveValue) || 4,
+      groupAttackDamage: Number(actor.flags?.[MODULE_ID]?.groupAttackDamage) || 4,
+      groupAttackType: actor.flags?.[MODULE_ID]?.groupAttackType ?? "physical",
       stress: Number(system.resources?.stress?.max) || 0,
       atk: Number.parseInt(attack.roll?.bonus, 10) || 0,
       weaponImg: attack.img ?? DEFAULT_ATTACK_ICON,
@@ -1138,6 +1288,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       weaponDamageDice: damageValue.dice ?? "d8",
       weaponDamageCount: Number(damageValue.flatMultiplier) || 1,
       weaponDamageBonus: Number(damageValue.bonus) || 0,
+      weaponDamageFlat: damageValue.custom?.enabled ? (Number(damageValue.custom.formula) || 0) : 4,
       weaponDamageType: damagePart.type?.[0] ?? "physical",
       effects: this._readResistanceEffectsFromActor(actor),
       experiences: experiences.length ? experiences : [AdversaryCreatorApp._newExperience()],

@@ -104,10 +104,11 @@ export const ROLE_TIPS = {
   },
   minion: {
     summary: "Individually weak creatures defeated in one hit.",
-    damage: "Attacks increase by tier. No thresholds.",
-    features: "Minion(X) passive determines how many are defeated per X damage. Group Attack spends Fear.",
+    damage: "Flat damage increases by tier. No thresholds.",
+    features: "Minion(X) passive determines how many are defeated per X damage. Group Attack spends a Fear to have all nearby minions make one shared attack.",
     common: "Minion (X), Group Attack",
     experiences: "Most minions have simple or no experiences.",
+    tip: "Group Attack damage is usually equal to the minion's standard attack damage.",
   },
   ranged: {
     summary: "Attack from far away and keep pressure on the party.",

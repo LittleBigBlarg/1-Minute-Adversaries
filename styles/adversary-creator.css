@@ -576,6 +576,82 @@
 }
 .dhac-feature-card:hover::before { opacity: 0.75; }
 
+/* Pinned minion feature cards */
+.dhac-feature-pinned {
+  border-color: rgba(245,158,11,0.18);
+  cursor: default;
+}
+.dhac-feature-pinned::before {
+  background: linear-gradient(180deg, var(--dhac-gold) 0%, transparent 100%);
+  opacity: 0.5;
+}
+.dhac-feature-pinned:hover {
+  border-color: rgba(245,158,11,0.28);
+  background: var(--dhac-card);
+}
+.dhac-feature-pinned:hover::before { opacity: 0.65; }
+
+.dhac-pinned-feature-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dhac-feature-pinned-type {
+  font-size: var(--dhac-font-labels);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dhac-gold-muted);
+}
+.dhac-pinned-lock {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--dhac-gold-muted);
+  opacity: 0.55;
+}
+.dhac-feature-pinned-name {
+  font-size: var(--dhac-font-feature-name);
+  font-weight: 700;
+  color: var(--dhac-text);
+}
+.dhac-feature-pinned-desc {
+  font-size: var(--dhac-font-feature-description);
+  color: var(--dhac-text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+.dhac-feature-pinned-desc strong {
+  color: var(--dhac-gold);
+}
+.dhac-pinned-x {
+  color: var(--dhac-gold);
+}
+.dhac-group-attack-type-row {
+  display: flex;
+  gap: 6px;
+}
+.dhac-type-toggle {
+  flex: 1;
+  padding: 3px 8px;
+  font-size: var(--dhac-font-labels);
+  font-weight: 600;
+  border-radius: var(--dhac-radius-sm);
+  border: 1px solid var(--dhac-border-mid);
+  background: rgba(0,0,0,0.25);
+  color: var(--dhac-text-muted);
+  cursor: pointer;
+  transition: background var(--dhac-ease), color var(--dhac-ease), border-color var(--dhac-ease);
+}
+.dhac-type-toggle:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--dhac-text);
+}
+.dhac-type-toggle.is-on {
+  background: var(--dhac-gold-soft);
+  border-color: rgba(245,158,11,0.4);
+  color: var(--dhac-gold);
+}
+
 .dhac-feature-top {
   display: flex;
   gap: 6px;
