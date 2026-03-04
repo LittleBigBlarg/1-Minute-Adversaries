@@ -279,6 +279,43 @@
 }
 
 /* =============================================================
+   NUMBER SPINNER BUTTONS
+   ============================================================= */
+
+/* Hide native browser spinners — we use custom ones */
+.dhac-stat input[type="number"]::-webkit-inner-spin-button,
+.dhac-stat input[type="number"]::-webkit-outer-spin-button,
+.dhac-field input[type="number"]::-webkit-inner-spin-button,
+.dhac-field input[type="number"]::-webkit-outer-spin-button,
+.dhac-experience-row input[type="number"]::-webkit-inner-spin-button,
+.dhac-experience-row input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  display: none;
+}
+.dhac-stat input[type="number"],
+.dhac-field input[type="number"],
+.dhac-experience-row input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Cursor hint that scroll-wheel changes the value */
+.dhac-stat input[type="number"]:hover,
+.dhac-field input[type="number"]:hover,
+.dhac-experience-row input[type="number"]:hover {
+  cursor: ns-resize;
+}
+
+/* Bump animation: brief scale-up + blue glow, then settle */
+@keyframes dhac-num-bump {
+  0%   { transform: scale(1);    box-shadow: none; }
+  35%  { transform: scale(1.07); box-shadow: 0 0 0 3px var(--dhac-blue-glow); }
+  100% { transform: scale(1);    box-shadow: none; }
+}
+.dhac-num-bump {
+  animation: dhac-num-bump 0.2s ease-out forwards;
+}
+
+/* =============================================================
    BENCHMARK RANGE BADGES
    ============================================================= */
 .dhac-range {
@@ -1003,6 +1040,9 @@
   transform: rotate(45deg);
 }
 .dhac-role-tip-wrapper:hover .dhac-role-tip-popup { display: block; }
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-popup { display: block; }
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-btn,
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-btn:hover { opacity: 1; color: var(--dhac-gold); }
 
 .dhac-role-tip-header {
   font-size: 11px;
@@ -1037,6 +1077,28 @@
   font-size: 11px;
 }
 .dhac-role-tip-extra i { color: var(--dhac-gold); margin-right: 4px; }
+
+.dhac-role-tip-link {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(245,158,11,0.12);
+}
+.dhac-role-tip-doc-link {
+  color: var(--dhac-gold-muted);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0.78;
+  text-decoration: none;
+  transition: opacity var(--dhac-ease);
+}
+.dhac-role-tip-doc-link i { font-size: 10px; flex-shrink: 0; }
+.dhac-role-tip-doc-link:hover {
+  opacity: 1;
+  color: var(--dhac-gold);
+  text-decoration: underline;
+}
 
 /* =============================================================
    HEADER SETTINGS (COG)

@@ -200,6 +200,60 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         this._featureDescParseTimers.set(idx, timer);
       });
     });
+
+    // Mouse-wheel to nudge number inputs — scroll up = +1, scroll down = −1
+    html.querySelectorAll(
+      ".dhac-stat input[type='number'], .dhac-field input[type='number'], .dhac-experience-row input[type='number']"
+    ).forEach(input => {
+      input.addEventListener("wheel", (ev) => {
+        ev.preventDefault();
+        const step = Number(input.step) || 1;
+        const min  = input.min !== "" ? Number(input.min) : -Infinity;
+        const delta = ev.deltaY < 0 ? step : -step;
+        input.value = String(Math.max(min, Number(input.value || 0) + delta));
+        input.dispatchEvent(new Event("input",  { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        // Brief expand-and-settle animation for visual feedback
+        input.classList.remove("dhac-num-bump");
+        void input.offsetWidth; // force reflow to restart animation
+        input.classList.add("dhac-num-bump");
+      }, { passive: false });
+    });
+
+    this._setupRoleTipPin(html);
+  }
+
+  /** Handle click-to-pin on role tip popup and external doc link. */
+  _setupRoleTipPin(html) {
+    // Remove previous document listener if re-rendering
+    if (this._roleTipClickOutsideHandler) {
+      document.removeEventListener("pointerdown", this._roleTipClickOutsideHandler);
+      this._roleTipClickOutsideHandler = null;
+    }
+
+    const wrappers = html.querySelectorAll(".dhac-role-tip-wrapper");
+    if (!wrappers.length) return;
+
+    wrappers.forEach(wrapper => {
+      const btn = wrapper.querySelector(".dhac-role-tip-btn");
+      btn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        wrapper.classList.toggle("is-pinned");
+      });
+    });
+
+    // Click outside closes pinned popups
+    this._roleTipClickOutsideHandler = (e) => {
+      wrappers.forEach(wrapper => {
+        if (!wrapper.contains(e.target)) wrapper.classList.remove("is-pinned");
+      });
+    };
+    document.addEventListener("pointerdown", this._roleTipClickOutsideHandler);
+
+    // Open external doc link via window.open so Electron doesn't swallow it
+    html.querySelectorAll(".dhac-role-tip-doc-link").forEach(a => {
+      a.addEventListener("click", (e) => { e.preventDefault(); window.open(a.href, "_blank"); });
+    });
   }
 
   _saveFontSettings() {
@@ -1231,6 +1285,10 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     const closePanel = headerWrap?._dhacClosePanelHandler;
     if (typeof closePanel === "function") {
       document.removeEventListener("pointerdown", closePanel);
+    }
+    if (this._roleTipClickOutsideHandler) {
+      document.removeEventListener("pointerdown", this._roleTipClickOutsideHandler);
+      this._roleTipClickOutsideHandler = null;
     }
     return super.close(options);
   }
