@@ -1,59 +1,129 @@
-/* Scoped to application ID */
+/* =============================================================
+   1-Minute Adversaries — Modern Dark Fantasy UI
+   ============================================================= */
+
+/* --- Application Window --- */
 #one-minute-adversaries {
   min-width: 740px;
-  background: #242424 !important;
-  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  --dhac-glass-opacity: 0.65;
+  background: rgba(22, 22, 30, var(--dhac-glass-opacity)) !important;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.08) !important;
   overflow: visible;
 }
 #one-minute-adversaries .window-content {
   padding: 0 !important;
-  background: #242424;
-  overflow: visible;
+  background: transparent;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
-/* --- Layout --- */
+/* =============================================================
+   LAYOUT CONTAINER + DESIGN TOKENS
+   ============================================================= */
 .dhac-layout {
-  --dhac-font-name-input: 14px;
+  /* Font-size vars (modified by settings panel) */
+  --dhac-font-name-input: 15px;
   --dhac-font-feature-name: 13px;
   --dhac-font-feature-type: 12px;
   --dhac-font-feature-description: 13px;
   --dhac-font-feature-pills: 11px;
   --dhac-font-labels: 10px;
+
+  /* Design tokens */
+  --dhac-bg:              #16161e;
+  --dhac-surface:         #1c1c27;
+  --dhac-card:            #20202c;
+  --dhac-card-hover:      #242432;
+  --dhac-border:          rgba(255,255,255,0.07);
+  --dhac-border-mid:      rgba(255,255,255,0.11);
+  --dhac-border-subtle:   rgba(255,255,255,0.04);
+
+  --dhac-accent:          #dc2626;
+  --dhac-accent-soft:     rgba(220,38,38,0.15);
+  --dhac-accent-glow:     rgba(220,38,38,0.22);
+
+  --dhac-gold:            #f59e0b;
+  --dhac-gold-soft:       rgba(245,158,11,0.12);
+  --dhac-gold-muted:      rgba(245,158,11,0.65);
+
+  --dhac-green:           #22c55e;
+  --dhac-green-dark:      #14532d;
+  --dhac-green-mid:       #166534;
+  --dhac-green-glow:      rgba(34,197,94,0.28);
+
+  --dhac-blue:            #3b82f6;
+  --dhac-blue-glow:       rgba(59,130,246,0.22);
+
+  --dhac-text:            #e2e8f0;
+  --dhac-text-muted:      #7a8799;
+  --dhac-text-faint:      #404858;
+
+  --dhac-radius:          6px;
+  --dhac-radius-sm:       4px;
+  --dhac-ease:            0.17s ease;
+
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 10px;
-  gap: 8px;
+  padding: 12px;
+  gap: 10px;
   font-size: 14px;
+  color: var(--dhac-text);
+  background: transparent;
 }
 
-/* --- Top Bar --- */
+/* =============================================================
+   TOP BAR
+   ============================================================= */
 .dhac-topbar {
   display: flex;
   gap: 8px;
   align-items: flex-end;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border-light-2);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--dhac-border);
+  position: relative;
 }
+/* Gradient accent line under topbar */
+.dhac-topbar::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--dhac-accent-glow) 25%,
+    rgba(245,158,11,0.25) 60%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+/* Actor portrait */
 .dhac-actor-image-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   flex: 0 0 auto;
 }
 .dhac-actor-image-btn {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   padding: 0;
-  border: 1px solid var(--color-border-light-2);
-  border-radius: 4px;
-  background: rgba(0,0,0,0.3);
+  border: 2px solid var(--dhac-border);
+  border-radius: var(--dhac-radius);
+  background: rgba(0,0,0,0.4);
   cursor: pointer;
   overflow: hidden;
+  transition: border-color var(--dhac-ease), box-shadow var(--dhac-ease);
 }
 .dhac-actor-image-btn:hover {
-  border-color: var(--color-text-hyperlink);
-  box-shadow: 0 0 3px rgba(0, 150, 255, 0.35);
+  border-color: var(--dhac-accent);
+  box-shadow: 0 0 10px var(--dhac-accent-glow);
 }
 .dhac-actor-image {
   width: 100%;
@@ -61,57 +131,100 @@
   object-fit: cover;
   display: block;
 }
+.dhac-feature-image-reset-btn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--dhac-border);
+  border-radius: var(--dhac-radius-sm);
+  background: rgba(0,0,0,0.2);
+  color: var(--dhac-text-muted);
+  cursor: pointer;
+  flex: 0 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--dhac-ease);
+}
+.dhac-feature-image-reset-btn:hover {
+  color: var(--dhac-text);
+  border-color: var(--dhac-border-mid);
+  background: rgba(0,0,0,0.35);
+}
+.dhac-feature-image-reset-btn i { font-size: 9px; }
+
+/* Topbar fields */
 .dhac-topbar-field {
   display: flex;
   flex-direction: column;
   flex: 1;
+  gap: 3px;
 }
-.dhac-topbar-name {
-  flex: 1 1 320px;
-}
+.dhac-topbar-name  { flex: 1 1 300px; }
+.dhac-topbar-narrow { flex: 0 0 78px; }
+.dhac-topbar-role   { flex: 0 0 130px; }
+
 .dhac-topbar-field label {
-  font-size: 11px;
-  font-weight: bold;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  color: var(--color-text-light-5);
-  margin-bottom: 2px;
+  letter-spacing: 0.09em;
+  color: var(--dhac-text-muted);
 }
-.dhac-topbar-narrow { flex: 0 0 85px; }
-.dhac-topbar-role { flex: 0 0 120px; }
 .dhac-topbar input,
 .dhac-topbar select {
   background: rgba(0,0,0,0.3);
-  color: #e0e0e0;
-  border: 1px solid var(--color-border-light-2);
-  padding: 6px 8px;
-  border-radius: 4px;
+  color: var(--dhac-text);
+  border: 1px solid var(--dhac-border);
+  padding: 7px 10px;
+  border-radius: var(--dhac-radius);
   font-size: var(--dhac-font-name-input);
+  transition: border-color var(--dhac-ease), box-shadow var(--dhac-ease), background var(--dhac-ease);
 }
 .dhac-topbar input:focus,
 .dhac-topbar select:focus {
-  border-color: var(--color-text-hyperlink);
-  box-shadow: 0 0 3px var(--color-text-hyperlink);
+  border-color: var(--dhac-blue);
+  box-shadow: 0 0 0 2px var(--dhac-blue-glow);
+  background: rgba(0,0,0,0.4);
   outline: none;
 }
-.dhac-topbar select option { background: #242424; color: #e0e0e0; }
+.dhac-topbar input:hover:not(:focus),
+.dhac-topbar select:hover:not(:focus) { border-color: var(--dhac-border-mid); }
+.dhac-topbar input::placeholder { color: var(--dhac-text-faint); }
+.dhac-topbar select option { background: #1c1c27; color: var(--dhac-text); }
 
+/* Auto-fill button */
 .dhac-btn-autofill {
-  background: #333;
-  border: 1px solid var(--color-border-light-2);
-  color: white;
+  background: linear-gradient(135deg, rgba(245,158,11,0.14), rgba(245,158,11,0.07));
+  border: 1px solid rgba(245,158,11,0.32);
+  color: var(--dhac-gold);
   cursor: pointer;
-  padding: 6px 14px;
-  border-radius: 4px;
-  transition: all 0.2s;
+  padding: 7px 14px;
+  border-radius: var(--dhac-radius);
+  transition: all var(--dhac-ease);
   white-space: nowrap;
   font-size: 13px;
+  font-weight: 600;
 }
 .dhac-btn-autofill:hover {
-  background: #444;
-  border-color: var(--color-text-hyperlink);
+  background: linear-gradient(135deg, rgba(245,158,11,0.24), rgba(245,158,11,0.14));
+  border-color: rgba(245,158,11,0.55);
+  box-shadow: 0 0 12px rgba(245,158,11,0.12);
+  color: #fbbf24;
 }
+.dhac-btn-autofill i { margin-right: 5px; }
 
-/* --- Main Content --- */
+/* Role select row */
+.dhac-role-select-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dhac-role-select-row select { flex: 1; }
+
+/* =============================================================
+   MAIN CONTENT AREA
+   ============================================================= */
 .dhac-main {
   display: flex;
   flex: 1;
@@ -127,135 +240,236 @@
 .dhac-col-stats {
   flex: 1;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 6px;
+  min-height: 0;
 }
 .dhac-col-features {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
-/* --- Section Titles --- */
+/* =============================================================
+   SECTION TITLES
+   ============================================================= */
 .dhac-section-title {
-  font-size: 13px;
-  font-weight: bold;
-  color: var(--color-text-light-highlight);
-  margin: 8px 0 4px 0;
-  padding-bottom: 3px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--dhac-text-muted);
+  margin: 12px 0 6px 0;
+  padding: 0 0 0 9px;
+  border-left: 2px solid var(--dhac-accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
 }
-.dhac-section-title i { margin-right: 4px; opacity: 0.7; }
-
-/* --- Benchmark Ranges (gold, inline) --- */
-.dhac-range {
-  font-weight: normal;
-  font-size: 12px;
-  color: #ffd700;
+.dhac-section-title:first-child { margin-top: 2px; }
+.dhac-section-title i {
+  color: var(--dhac-accent);
+  font-size: 10px;
   opacity: 0.85;
 }
+/* Range badge inside a section title */
+.dhac-section-title .dhac-range {
+  margin-left: auto;
+  border-left: none;
+  padding: 0;
+  letter-spacing: normal;
+}
 
-/* --- Stat Grid --- */
+/* =============================================================
+   NUMBER SPINNER BUTTONS
+   ============================================================= */
+
+/* Hide native browser spinners — we use custom ones */
+.dhac-stat input[type="number"]::-webkit-inner-spin-button,
+.dhac-stat input[type="number"]::-webkit-outer-spin-button,
+.dhac-field input[type="number"]::-webkit-inner-spin-button,
+.dhac-field input[type="number"]::-webkit-outer-spin-button,
+.dhac-experience-row input[type="number"]::-webkit-inner-spin-button,
+.dhac-experience-row input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  display: none;
+}
+.dhac-stat input[type="number"],
+.dhac-field input[type="number"],
+.dhac-experience-row input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Cursor hint that scroll-wheel changes the value */
+.dhac-stat input[type="number"]:hover,
+.dhac-field input[type="number"]:hover,
+.dhac-experience-row input[type="number"]:hover {
+  cursor: ns-resize;
+}
+
+/* Bump animation: brief scale-up + blue glow, then settle */
+@keyframes dhac-num-bump {
+  0%   { transform: scale(1);    box-shadow: none; }
+  35%  { transform: scale(1.07); box-shadow: 0 0 0 3px var(--dhac-blue-glow); }
+  100% { transform: scale(1);    box-shadow: none; }
+}
+.dhac-num-bump {
+  animation: dhac-num-bump 0.2s ease-out forwards;
+}
+
+/* =============================================================
+   BENCHMARK RANGE BADGES
+   ============================================================= */
+.dhac-range {
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--dhac-gold);
+  background: var(--dhac-gold-soft);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid rgba(245,158,11,0.2);
+  white-space: nowrap;
+}
+
+/* =============================================================
+   STAT BOXES
+   ============================================================= */
 .dhac-stat-row { display: flex; gap: 6px; }
 .dhac-stat {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 3px;
 }
 .dhac-stat label {
   font-size: var(--dhac-font-labels);
-  font-weight: bold;
+  font-weight: 700;
   text-transform: uppercase;
-  color: var(--color-text-light-5);
-  margin-bottom: 2px;
+  letter-spacing: 0.07em;
+  color: var(--dhac-text-muted);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
 }
 .dhac-stat input {
-  background: rgba(0,0,0,0.3);
-  color: #e0e0e0;
-  border: 1px solid var(--color-border-light-2);
-  padding: 6px;
-  border-radius: 4px;
-  font-size: 18px;
-  font-weight: bold;
+  background: var(--dhac-card);
+  color: var(--dhac-text);
+  border: 1px solid var(--dhac-border);
+  border-top: 2px solid rgba(220,38,38,0.38);
+  padding: 8px 4px;
+  border-radius: var(--dhac-radius);
+  font-size: 22px;
+  font-weight: 700;
   text-align: center;
+  letter-spacing: -0.01em;
+  transition: all var(--dhac-ease);
+}
+.dhac-stat input:hover:not(:focus) {
+  border-color: rgba(255,255,255,0.13);
+  border-top-color: rgba(220,38,38,0.55);
 }
 .dhac-stat input:focus {
-  border-color: var(--color-text-hyperlink);
-  box-shadow: 0 0 3px var(--color-text-hyperlink);
+  border-color: var(--dhac-blue);
+  border-top-color: var(--dhac-blue);
+  box-shadow: 0 0 0 2px var(--dhac-blue-glow);
+  background: rgba(30,30,50,0.9);
   outline: none;
 }
 
-/* --- Fields --- */
+/* =============================================================
+   FORM FIELDS
+   ============================================================= */
 .dhac-field {
   display: flex;
   flex-direction: column;
   flex: 1;
+  gap: 3px;
 }
 .dhac-field label {
   font-size: var(--dhac-font-labels);
-  font-weight: bold;
+  font-weight: 700;
   text-transform: uppercase;
-  color: var(--color-text-light-5);
-  margin-bottom: 2px;
+  letter-spacing: 0.07em;
+  color: var(--dhac-text-muted);
 }
 .dhac-field input,
 .dhac-field textarea,
 .dhac-field select {
-  background: rgba(0,0,0,0.3);
-  color: #e0e0e0;
-  border: 1px solid var(--color-border-light-2);
-  padding: 6px 8px;
-  border-radius: 4px;
+  background: rgba(0,0,0,0.25);
+  color: var(--dhac-text);
+  border: 1px solid var(--dhac-border);
+  padding: 7px 9px;
+  border-radius: var(--dhac-radius);
   font-size: 13px;
   font-family: var(--font-primary);
+  transition: border-color var(--dhac-ease), box-shadow var(--dhac-ease), background var(--dhac-ease);
 }
+.dhac-field input:hover:not(:focus),
+.dhac-field textarea:hover:not(:focus),
+.dhac-field select:hover:not(:focus) { border-color: var(--dhac-border-mid); }
 .dhac-field input:focus,
 .dhac-field textarea:focus,
 .dhac-field select:focus {
-  border-color: var(--color-text-hyperlink);
-  box-shadow: 0 0 3px var(--color-text-hyperlink);
+  border-color: var(--dhac-blue);
+  box-shadow: 0 0 0 2px var(--dhac-blue-glow);
+  background: rgba(0,0,0,0.38);
   outline: none;
 }
-.dhac-field select option { background: #242424; color: #e0e0e0; }
-.dhac-field textarea { resize: vertical; min-height: 40px; }
-.dhac-field-row { display: flex; gap: 6px; }
+.dhac-field select option { background: #1c1c27; color: var(--dhac-text); }
+.dhac-field textarea {
+  resize: vertical;
+  min-height: 44px;
+  line-height: 1.5;
+}
+.dhac-field-row { display: flex; gap: 6px; align-items: flex-end; }
 
+/* =============================================================
+   EXPERIENCES
+   ============================================================= */
 .dhac-experiences-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .dhac-experiences-header label {
   font-size: var(--dhac-font-labels);
-  font-weight: bold;
+  font-weight: 700;
   text-transform: uppercase;
-  color: var(--color-text-light-5);
+  letter-spacing: 0.07em;
+  color: var(--dhac-text-muted);
 }
 .dhac-experiences-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.dhac-experience-row {
-  align-items: center;
-}
+.dhac-experience-row { align-items: center; }
+
 .dhac-btn-add-inline {
-  background: #333;
-  border: 1px solid var(--color-border-light-2);
-  color: var(--color-text-light-5);
+  background: rgba(0,0,0,0.18);
+  border: 1px solid var(--dhac-border);
+  color: var(--dhac-text-muted);
   cursor: pointer;
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: var(--dhac-radius-sm);
   font-size: 11px;
-  transition: all 0.2s;
+  transition: all var(--dhac-ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 .dhac-btn-add-inline:hover {
-  background: #444;
-  border-color: var(--color-text-hyperlink);
-  color: white;
+  background: rgba(59,130,246,0.1);
+  border-color: rgba(59,130,246,0.35);
+  color: #93c5fd;
 }
 
-/* --- Features --- */
+/* =============================================================
+   RIGHT COLUMN — FEATURES HEADER
+   ============================================================= */
 .dhac-features-header {
   display: flex;
   justify-content: space-between;
@@ -263,303 +477,712 @@
   gap: 8px;
 }
 .dhac-features-header .dhac-section-title { margin: 0; border: none; padding: 0; }
+
+/* Tab strip */
 .dhac-right-tabs {
   display: flex;
   align-items: center;
-  gap: 4px;
-  min-width: 0;
+  gap: 3px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid var(--dhac-border);
+  border-radius: var(--dhac-radius);
+  padding: 3px;
 }
 .dhac-right-tab {
-  background: #2a2a2a;
-  border: 1px solid var(--color-border-light-2);
-  color: var(--color-text-light-5);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--dhac-text-muted);
   cursor: pointer;
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--dhac-radius-sm);
   font-size: 12px;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all var(--dhac-ease);
   white-space: nowrap;
 }
-.dhac-right-tab i {
-  margin-right: 4px;
-  opacity: 0.8;
-}
+.dhac-right-tab i { margin-right: 4px; font-size: 10px; }
 .dhac-right-tab:hover {
-  background: #353535;
-  border-color: var(--color-text-hyperlink);
-  color: white;
+  background: rgba(255,255,255,0.06);
+  color: var(--dhac-text);
 }
 .dhac-right-tab.is-active {
-  background: rgba(72, 187, 72, 0.14);
-  border-color: rgba(72, 187, 72, 0.55);
-  color: #d7ffd7;
-}
-.dhac-btn-add {
-  background: #333;
-  border: 1px solid var(--color-border-light-2);
-  color: var(--color-text-light-5);
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  transition: all 0.2s;
-}
-.dhac-btn-add:hover {
-  background: #444;
-  border-color: var(--color-text-hyperlink);
-  color: white;
-}
-.dhac-btn-add-bottom {
-  background: #333;
-  border: 1px dashed var(--color-border-light-2);
-  color: var(--color-text-light-5);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 13px;
-  transition: all 0.2s;
-  text-align: center;
-  margin-top: 4px;
-  flex-shrink: 0;
-}
-.dhac-btn-add-bottom:hover {
-  background: #444;
-  border-color: var(--color-text-hyperlink);
-  color: white;
+  background: rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.22);
+  color: #86efac;
 }
 
+/* Add button (header) */
+.dhac-btn-add {
+  background: rgba(0,0,0,0.18);
+  border: 1px solid var(--dhac-border);
+  color: var(--dhac-text-muted);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: var(--dhac-radius);
+  font-size: 12px;
+  transition: all var(--dhac-ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.dhac-btn-add:hover {
+  background: rgba(59,130,246,0.1);
+  border-color: rgba(59,130,246,0.32);
+  color: #93c5fd;
+}
+
+/* =============================================================
+   FEATURES SCROLL AREA
+   ============================================================= */
 .dhac-features-scroll {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-right: 2px;
+  gap: 8px;
+  padding-right: 4px;
+  padding-top: 4px;
+  min-height: 0;
 }
 
+/* =============================================================
+   FEATURE CARDS
+   ============================================================= */
 .dhac-feature-card {
-  background: rgba(0,0,0,0.15);
-  border: 1px solid var(--color-border-light-2);
-  border-radius: 4px;
-  padding: 6px;
+  background: var(--dhac-card);
+  border: 1px solid var(--dhac-border);
+  border-radius: var(--dhac-radius);
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-.dhac-feature-top {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-.dhac-feature-image-btn {
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid var(--color-border-light-2);
-  border-radius: 3px;
-  background: rgba(0,0,0,0.3);
-  cursor: pointer;
-  flex: 0 0 30px;
+  gap: 6px;
+  flex-shrink: 0;
+  transition: border-color var(--dhac-ease), background var(--dhac-ease);
+  position: relative;
   overflow: hidden;
 }
-.dhac-feature-image-btn:hover {
-  border-color: var(--color-text-hyperlink);
-  box-shadow: 0 0 3px rgba(0, 150, 255, 0.35);
-}
-.dhac-feature-image {
-  width: 100%;
+/* Red left stripe */
+.dhac-feature-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  background: linear-gradient(180deg, var(--dhac-accent) 0%, transparent 100%);
+  border-radius: var(--dhac-radius) 0 0 var(--dhac-radius);
+  opacity: 0.45;
+  transition: opacity var(--dhac-ease);
 }
-.dhac-feature-image-reset-btn {
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: 1px solid var(--color-border-light-2);
-  border-radius: 3px;
-  background: rgba(0,0,0,0.25);
-  color: var(--color-text-light-5);
-  cursor: pointer;
-  flex: 0 0 22px;
-  display: inline-flex;
+.dhac-feature-card:hover {
+  border-color: var(--dhac-border-mid);
+  background: var(--dhac-card-hover);
+}
+.dhac-feature-card:hover::before { opacity: 0.75; }
+
+/* Pinned minion feature cards */
+.dhac-feature-pinned {
+  border-color: rgba(245,158,11,0.18);
+  cursor: default;
+}
+.dhac-feature-pinned::before {
+  background: linear-gradient(180deg, var(--dhac-gold) 0%, transparent 100%);
+  opacity: 0.5;
+}
+.dhac-feature-pinned:hover {
+  border-color: rgba(245,158,11,0.28);
+  background: var(--dhac-card);
+}
+.dhac-feature-pinned:hover::before { opacity: 0.65; }
+
+.dhac-pinned-feature-header {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
 }
-.dhac-feature-image-reset-btn:hover {
-  color: white;
-  border-color: var(--color-text-hyperlink);
-  background: rgba(0,0,0,0.4);
+.dhac-feature-pinned-type {
+  font-size: var(--dhac-font-labels);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dhac-gold-muted);
 }
-.dhac-feature-image-reset-btn i {
-  font-size: 10px;
+.dhac-pinned-lock {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--dhac-gold-muted);
+  opacity: 0.55;
 }
+.dhac-feature-pinned-name {
+  font-size: var(--dhac-font-feature-name);
+  font-weight: 700;
+  color: var(--dhac-text);
+}
+.dhac-feature-pinned-desc {
+  font-size: var(--dhac-font-feature-description);
+  color: var(--dhac-text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+.dhac-feature-pinned-desc strong {
+  color: var(--dhac-gold);
+}
+.dhac-pinned-x {
+  color: var(--dhac-gold);
+}
+.dhac-group-attack-type-row {
+  display: flex;
+  gap: 6px;
+}
+.dhac-type-toggle {
+  flex: 1;
+  padding: 3px 8px;
+  font-size: var(--dhac-font-labels);
+  font-weight: 600;
+  border-radius: var(--dhac-radius-sm);
+  border: 1px solid var(--dhac-border-mid);
+  background: rgba(0,0,0,0.25);
+  color: var(--dhac-text-muted);
+  cursor: pointer;
+  transition: background var(--dhac-ease), color var(--dhac-ease), border-color var(--dhac-ease);
+}
+.dhac-type-toggle:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--dhac-text);
+}
+.dhac-type-toggle.is-on {
+  background: var(--dhac-gold-soft);
+  border-color: rgba(245,158,11,0.4);
+  color: var(--dhac-gold);
+}
+
+.dhac-feature-top {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Feature image */
+.dhac-feature-image-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--dhac-border);
+  border-radius: var(--dhac-radius-sm);
+  background: rgba(0,0,0,0.3);
+  cursor: pointer;
+  flex: 0 0 32px;
+  overflow: hidden;
+  transition: border-color var(--dhac-ease), box-shadow var(--dhac-ease);
+}
+.dhac-feature-image-btn:hover {
+  border-color: var(--dhac-accent);
+  box-shadow: 0 0 8px var(--dhac-accent-glow);
+}
+.dhac-feature-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Feature name */
 .dhac-feature-name-input {
   flex: 1;
-  background: rgba(0,0,0,0.3);
-  color: #e0e0e0;
-  border: 1px solid var(--color-border-light-2);
-  padding: 5px 6px;
-  border-radius: 3px;
+  background: rgba(0,0,0,0.2);
+  color: var(--dhac-text);
+  border: 1px solid var(--dhac-border);
+  padding: 5px 8px;
+  border-radius: var(--dhac-radius-sm);
   font-size: var(--dhac-font-feature-name);
+  font-weight: 600;
+  transition: all var(--dhac-ease);
 }
-.dhac-feature-name-input:focus { border-color: var(--color-text-hyperlink); outline: none; }
-.dhac-feature-name-input::placeholder { color: rgba(255,255,255,0.25); }
+.dhac-feature-name-input:focus {
+  border-color: var(--dhac-blue);
+  box-shadow: 0 0 0 2px var(--dhac-blue-glow);
+  outline: none;
+}
+.dhac-feature-name-input::placeholder {
+  color: rgba(255,255,255,0.16);
+  font-weight: 400;
+}
+
+/* Feature type select */
 .dhac-feature-type-select {
   width: 95px;
-  background: rgba(0,0,0,0.3);
-  color: #e0e0e0;
-  border: 1px solid var(--color-border-light-2);
-  padding: 5px;
-  border-radius: 3px;
+  background: rgba(0,0,0,0.22);
+  color: var(--dhac-text-muted);
+  border: 1px solid var(--dhac-border);
+  padding: 5px 6px;
+  border-radius: var(--dhac-radius-sm);
   font-size: var(--dhac-font-feature-type);
+  transition: all var(--dhac-ease);
 }
-.dhac-feature-type-select option { background: #242424; color: #e0e0e0; }
+.dhac-feature-type-select:focus {
+  border-color: var(--dhac-blue);
+  color: var(--dhac-text);
+  outline: none;
+}
+.dhac-feature-type-select option { background: #1c1c27; color: var(--dhac-text); }
+
+/* Remove button */
 .dhac-btn-remove {
   background: none;
   border: 1px solid transparent;
-  color: rgba(255,80,80,0.6);
+  color: rgba(239,68,68,0.4);
   cursor: pointer;
-  padding: 3px 6px;
-  border-radius: 3px;
-  transition: all 0.2s;
+  padding: 4px 6px;
+  border-radius: var(--dhac-radius-sm);
+  transition: all var(--dhac-ease);
+  line-height: 1;
 }
-.dhac-btn-remove:hover { color: #ff4444; border-color: rgba(255,80,80,0.4); }
+.dhac-btn-remove:hover {
+  color: #ef4444;
+  border-color: rgba(239,68,68,0.32);
+  background: rgba(239,68,68,0.08);
+}
 
+/* Feature textarea */
 .dhac-feature-card textarea {
-  background: rgba(0,0,0,0.3);
-  color: #e0e0e0;
-  border: 1px solid var(--color-border-light-2);
-  padding: 5px 6px;
-  border-radius: 3px;
+  background: rgba(0,0,0,0.18);
+  color: var(--dhac-text);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 7px 8px;
+  border-radius: var(--dhac-radius-sm);
   font-size: var(--dhac-font-feature-description);
   font-family: var(--font-primary);
-  resize: vertical;
-  min-height: 46px;
+  resize: none;
+  overflow: hidden;
+  min-height: 32px;
+  line-height: 1.55;
+  transition: border-color var(--dhac-ease), box-shadow var(--dhac-ease);
 }
-.dhac-feature-card textarea:focus { border-color: var(--color-text-hyperlink); outline: none; }
+.dhac-feature-card textarea:focus {
+  border-color: var(--dhac-blue);
+  box-shadow: 0 0 0 2px var(--dhac-blue-glow);
+  outline: none;
+}
 
+/* =============================================================
+   BOTTOM BUTTON ROW
+   ============================================================= */
+.dhac-btn-row-bottom {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.dhac-btn-add-bottom {
+  flex: 1;
+  background: rgba(0,0,0,0.14);
+  border: 1px dashed rgba(255,255,255,0.11);
+  color: var(--dhac-text-muted);
+  cursor: pointer;
+  padding: 9px 12px;
+  border-radius: var(--dhac-radius);
+  font-size: 13px;
+  transition: all var(--dhac-ease);
+  text-align: center;
+  flex-shrink: 0;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.dhac-btn-add-bottom:hover {
+  background: rgba(59,130,246,0.08);
+  border-color: rgba(59,130,246,0.28);
+  color: #93c5fd;
+}
+.dhac-btn-row-bottom .dhac-btn-add-bottom { margin-top: 0; }
+
+.dhac-btn-common-features {
+  flex: 1;
+  background: var(--dhac-gold-soft);
+  border: 1px dashed rgba(245,158,11,0.28);
+  color: var(--dhac-gold-muted);
+  cursor: pointer;
+  padding: 9px 12px;
+  border-radius: var(--dhac-radius);
+  font-size: 13px;
+  transition: all var(--dhac-ease);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.dhac-btn-common-features:hover {
+  background: rgba(245,158,11,0.16);
+  border-color: rgba(245,158,11,0.48);
+  color: var(--dhac-gold);
+}
+.dhac-btn-common-features i { margin-right: 0; }
+
+/* =============================================================
+   EFFECTS PANEL
+   ============================================================= */
 .dhac-effects-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .dhac-effects-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 8px;
+  border-top: 1px solid var(--dhac-border-subtle);
 }
 .dhac-effects-group:first-of-type {
   border-top: none;
   padding-top: 0;
 }
 .dhac-effects-group-title {
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #d7c28c;
-  opacity: 0.95;
+  letter-spacing: 0.09em;
+  color: var(--dhac-gold);
+  opacity: 0.9;
 }
 .dhac-effects-help {
   margin: 0 0 2px 0;
-  color: var(--color-text-light-5);
+  color: var(--dhac-text-muted);
   font-size: 12px;
-  line-height: 1.35;
-}
-.dhac-effect-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  background: rgba(120, 40, 40, 0.15);
-  border: 1px solid rgba(200, 60, 60, 0.4);
-  color: #e0e0e0;
-  border-radius: 4px;
-  padding: 8px 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: left;
+  line-height: 1.45;
+  font-style: italic;
 }
 .dhac-effect-row {
   display: flex;
   align-items: stretch;
   gap: 6px;
 }
-.dhac-effect-row .dhac-effect-toggle {
-  flex: 1;
+.dhac-effect-row .dhac-effect-toggle { flex: 1; }
+
+.dhac-effect-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  background: rgba(220,38,38,0.07);
+  border: 1px solid rgba(220,38,38,0.18);
+  color: var(--dhac-text);
+  border-radius: var(--dhac-radius);
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all var(--dhac-ease);
+  text-align: left;
 }
+.dhac-effect-toggle:hover {
+  background: rgba(220,38,38,0.13);
+  border-color: rgba(220,38,38,0.3);
+}
+.dhac-effect-toggle.is-on {
+  background: rgba(34,197,94,0.08);
+  border-color: rgba(34,197,94,0.28);
+}
+.dhac-effect-toggle.is-on:hover {
+  background: rgba(34,197,94,0.13);
+}
+
+.dhac-effect-toggle-label {
+  font-weight: 600;
+  font-size: 13px;
+}
+.dhac-effect-toggle-state {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(220,38,38,0.65);
+}
+.dhac-effect-toggle.is-on .dhac-effect-toggle-state { color: #86efac; }
+
 .dhac-effect-value-input {
   width: 54px;
   flex: 0 0 54px;
   background: rgba(0,0,0,0.3);
-  color: #e0e0e0;
-  border: 1px solid var(--color-border-light-2);
-  border-radius: 4px;
+  color: var(--dhac-text);
+  border: 1px solid var(--dhac-border);
+  border-radius: var(--dhac-radius);
   padding: 6px 8px;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
   font-family: var(--font-primary);
+  transition: border-color var(--dhac-ease), box-shadow var(--dhac-ease);
 }
-.dhac-effect-value-input option {
-  background: #242424;
-  color: #e0e0e0;
-}
+.dhac-effect-value-input option { background: #1c1c27; color: var(--dhac-text); }
 .dhac-effect-value-input:focus {
-  border-color: var(--color-text-hyperlink);
+  border-color: var(--dhac-blue);
+  box-shadow: 0 0 0 2px var(--dhac-blue-glow);
   outline: none;
-  box-shadow: 0 0 3px var(--color-text-hyperlink);
-}
-.dhac-effect-toggle:hover {
-  background: rgba(120, 40, 40, 0.25);
-  border-color: rgba(220, 80, 80, 0.6);
-}
-.dhac-effect-toggle.is-on {
-  background: rgba(40, 160, 40, 0.18);
-  border-color: rgba(72, 187, 72, 0.6);
-}
-.dhac-effect-toggle.is-on:hover {
-  background: rgba(40, 160, 40, 0.28);
-}
-.dhac-effect-toggle-label {
-  font-weight: 600;
-}
-.dhac-effect-toggle-state {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--color-text-light-5);
-}
-.dhac-effect-toggle.is-on .dhac-effect-toggle-state {
-  color: #7ae67a;
 }
 
-/* --- Toggle Pills (Red = off, Green = on) --- */
+/* =============================================================
+   TOGGLE PILLS (Fear Feature etc.)
+   ============================================================= */
 .dhac-toggles-row {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  padding-top: 3px;
-  min-height: 24px;
+  padding-top: 2px;
+  min-height: 22px;
 }
-
 .dhac-pill {
   font-size: var(--dhac-font-feature-pills);
   font-family: var(--font-primary);
-  padding: 2px 8px;
-  border-radius: 3px;
+  padding: 2px 9px;
+  border-radius: 100px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--dhac-ease);
   border: 1px solid;
-  line-height: 1.3;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.dhac-pill-off {
+  background: rgba(220,38,38,0.1);
+  border-color: rgba(220,38,38,0.28);
+  color: rgba(248,113,113,0.7);
+}
+.dhac-pill-off:hover {
+  background: rgba(220,38,38,0.18);
+  border-color: rgba(220,38,38,0.45);
+  color: #f87171;
+}
+.dhac-pill-on {
+  background: rgba(34,197,94,0.11);
+  border-color: rgba(34,197,94,0.38);
+  color: #86efac;
+}
+.dhac-pill-on:hover {
+  background: rgba(34,197,94,0.19);
+  border-color: rgba(34,197,94,0.55);
+  color: #a7f3c0;
 }
 
-/* --- Header Settings (Cog) --- */
-#one-minute-adversaries .window-header {
-  overflow: visible;
+/* =============================================================
+   FOOTER
+   ============================================================= */
+.dhac-footer {
+  display: flex;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--dhac-border);
+  flex-shrink: 0;
+  position: relative;
 }
+/* Gradient accent line above footer */
+.dhac-footer::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--dhac-green-glow) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.dhac-btn-reset {
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(239,68,68,0.22);
+  color: rgba(239,68,68,0.65);
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: var(--dhac-radius);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all var(--dhac-ease);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dhac-btn-reset:hover {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.38);
+  color: #f87171;
+}
+
+.dhac-btn-create {
+  flex: 1;
+  background: linear-gradient(135deg, var(--dhac-green-dark), var(--dhac-green-mid));
+  border: 1px solid rgba(34,197,94,0.38);
+  color: #d1fae5;
+  cursor: pointer;
+  padding: 9px 16px;
+  border-radius: var(--dhac-radius);
+  font-weight: 700;
+  font-size: 14px;
+  transition: all var(--dhac-ease);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.025em;
+}
+.dhac-btn-create:hover {
+  background: linear-gradient(135deg, var(--dhac-green-mid), #15803d);
+  border-color: rgba(34,197,94,0.55);
+  box-shadow: 0 0 18px var(--dhac-green-glow), inset 0 1px 0 rgba(255,255,255,0.07);
+  color: #ecfdf5;
+}
+.dhac-btn-create i { font-size: 13px; }
+
+/* =============================================================
+   SCROLLBARS
+   ============================================================= */
+.dhac-col-stats::-webkit-scrollbar,
+.dhac-features-scroll::-webkit-scrollbar { width: 4px; }
+.dhac-col-stats::-webkit-scrollbar-track,
+.dhac-features-scroll::-webkit-scrollbar-track { background: transparent; }
+.dhac-col-stats::-webkit-scrollbar-thumb,
+.dhac-features-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.09);
+  border-radius: 2px;
+}
+.dhac-col-stats::-webkit-scrollbar-thumb:hover,
+.dhac-features-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.17);
+}
+
+/* =============================================================
+   SIDEBAR BUTTON (module sidebar)
+   ============================================================= */
+.dhac-create-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(233,202,147,0.38);
+  border-radius: var(--dhac-radius);
+  background: rgba(5,6,18,0.75);
+  color: #e8d7b3;
+  transition: all var(--dhac-ease);
+  margin-top: 4px;
+}
+.dhac-create-btn:hover {
+  background: rgba(10,12,28,0.92);
+  border-color: rgba(233,202,147,0.62);
+  color: #f6e8c8;
+  box-shadow: 0 0 10px rgba(255,222,161,0.08);
+}
+
+/* =============================================================
+   ROLE TIP TOOLTIP
+   ============================================================= */
+.dhac-role-tip-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.dhac-role-tip-btn {
+  background: none;
+  border: none;
+  color: var(--dhac-gold);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  opacity: 0.6;
+  transition: opacity var(--dhac-ease);
+  line-height: 1;
+}
+.dhac-role-tip-btn:hover { opacity: 1; }
+
+.dhac-role-tip-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: -8px;
+  width: 300px;
+  background: #181824;
+  border: 1px solid rgba(245,158,11,0.28);
+  border-radius: var(--dhac-radius);
+  padding: 10px 12px;
+  z-index: 1000;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.03);
+  font-size: 12px;
+  line-height: 1.5;
+  color: #c0c8d8;
+}
+.dhac-role-tip-popup::before {
+  content: "";
+  position: absolute;
+  top: -6px; right: 14px;
+  width: 10px; height: 10px;
+  background: #181824;
+  border-top: 1px solid rgba(245,158,11,0.28);
+  border-left: 1px solid rgba(245,158,11,0.28);
+  transform: rotate(45deg);
+}
+.dhac-role-tip-wrapper:hover .dhac-role-tip-popup { display: block; }
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-popup { display: block; }
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-btn,
+.dhac-role-tip-wrapper.is-pinned .dhac-role-tip-btn:hover { opacity: 1; color: var(--dhac-gold); }
+
+.dhac-role-tip-header {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--dhac-gold);
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(245,158,11,0.18);
+}
+.dhac-role-tip-summary {
+  font-style: italic;
+  color: #c0a870;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+.dhac-role-tip-section {
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+.dhac-role-tip-label {
+  font-weight: 700;
+  color: #d4a845;
+  font-size: 11px;
+}
+.dhac-role-tip-extra {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(245,158,11,0.1);
+  color: #9ab89a;
+  font-size: 11px;
+}
+.dhac-role-tip-extra i { color: var(--dhac-gold); margin-right: 4px; }
+
+.dhac-role-tip-link {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(245,158,11,0.12);
+}
+.dhac-role-tip-doc-link {
+  color: var(--dhac-gold-muted);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0.78;
+  text-decoration: none;
+  transition: opacity var(--dhac-ease);
+}
+.dhac-role-tip-doc-link i { font-size: 10px; flex-shrink: 0; }
+.dhac-role-tip-doc-link:hover {
+  opacity: 1;
+  color: var(--dhac-gold);
+  text-decoration: underline;
+}
+
+/* =============================================================
+   HEADER SETTINGS (COG)
+   ============================================================= */
+#one-minute-adversaries .window-header { overflow: visible; }
 .dhac-header-settings-wrap {
   position: relative;
   display: inline-flex;
@@ -572,331 +1195,126 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: var(--dhac-radius-sm);
 }
-.dhac-header-settings-btn i {
-  font-size: 12px;
-}
-.dhac-header-settings-btn.is-open {
-  color: #ffd700;
-}
+.dhac-header-settings-btn i { font-size: 12px; }
+.dhac-header-settings-btn.is-open { color: var(--dhac-gold); }
+
 .dhac-header-settings-panel {
   display: none;
   position: absolute;
   top: -2px;
   left: calc(100% + 8px);
   width: 280px;
-  background: #1d1d1d;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 6px;
-  padding: 8px;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+  background: #1a1a24;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: var(--dhac-radius);
+  padding: 10px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
   z-index: 30;
 }
-.dhac-header-settings-wrap.is-open .dhac-header-settings-panel {
-  display: block;
-}
+.dhac-header-settings-wrap.is-open .dhac-header-settings-panel { display: block; }
+
 .dhac-font-settings-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #d8d8d8;
-  margin-bottom: 6px;
+  letter-spacing: 0.09em;
+  color: var(--dhac-text-muted);
+  margin-bottom: 8px;
 }
-.dhac-font-settings-grid {
-  display: grid;
-  gap: 6px;
-}
+.dhac-font-settings-grid { display: grid; gap: 6px; }
 .dhac-font-setting-row {
   display: grid;
-  grid-template-columns: 1fr 96px 42px;
+  grid-template-columns: 1fr 96px 42px 22px;
   gap: 6px;
   align-items: center;
-  color: #ddd;
+  color: #b0b8c8;
   font-size: 11px;
 }
-.dhac-font-setting-row span {
-  line-height: 1.2;
-}
-.dhac-font-setting-row input[type="range"] {
-  width: 100%;
-  margin: 0;
-}
+.dhac-font-setting-row span { line-height: 1.2; }
+.dhac-font-setting-row input[type="range"] { width: 100%; margin: 0; }
 .dhac-font-setting-row output {
   text-align: right;
-  color: #c6b58f;
-  font-weight: 600;
+  color: var(--dhac-gold);
+  font-weight: 700;
   font-size: 11px;
 }
-.dhac-font-settings-reset {
-  width: 100%;
-  margin-top: 8px;
-  background: #2f2f2f;
-  border: 1px solid rgba(255,255,255,0.14);
-  color: #ddd;
-  border-radius: 4px;
-  padding: 5px 8px;
-  font-size: 11px;
-  cursor: pointer;
-}
-.dhac-font-settings-reset:hover {
-  border-color: rgba(255, 215, 0, 0.45);
-  color: #fff2b0;
-}
-
-/* Off = Red */
-.dhac-pill-off {
-  background: rgba(180, 40, 40, 0.2);
-  border-color: rgba(200, 60, 60, 0.5);
-  color: #c84040;
-}
-.dhac-pill-off:hover {
-  background: rgba(180, 40, 40, 0.35);
-  border-color: rgba(220, 80, 80, 0.7);
-}
-
-/* On = Green */
-.dhac-pill-on {
-  background: rgba(40, 160, 40, 0.25);
-  border-color: rgba(72, 187, 72, 0.6);
-  color: #48bb48;
-}
-.dhac-pill-on:hover {
-  background: rgba(40, 160, 40, 0.4);
-  border-color: rgba(72, 187, 72, 0.8);
-}
-
-/* --- Footer --- */
-.dhac-footer {
-  display: flex;
-  gap: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--color-border-light-2);
-  flex-shrink: 0;
-}
-.dhac-btn-reset {
-  background: #333;
-  border: 1px solid var(--color-border-light-2);
-  color: #ff6666;
-  cursor: pointer;
-  padding: 7px 14px;
-  border-radius: 4px;
-  font-size: 13px;
-  transition: all 0.2s;
-}
-.dhac-btn-reset:hover { background: rgba(255,0,0,0.15); border-color: rgba(255,80,80,0.5); }
-.dhac-btn-create {
-  flex: 1;
-  background: #2f4f2f;
-  border: 1px solid #48bb48;
-  color: white;
-  cursor: pointer;
-  padding: 7px 14px;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-.dhac-btn-create:hover { background: #3a633a; box-shadow: 0 0 10px rgba(72,187,72,0.4); }
-
-/* --- Scrollbar --- */
-.dhac-col-stats::-webkit-scrollbar,
-.dhac-features-scroll::-webkit-scrollbar { width: 4px; }
-.dhac-col-stats::-webkit-scrollbar-thumb,
-.dhac-features-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
-
-/* --- Sidebar button --- */
-.dhac-create-btn {
+.dhac-setting-reset-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  width: 100%;
-  padding: 6px 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid rgba(233, 202, 147, 0.45);
-  border-radius: 4px;
-  background: rgba(5, 6, 18, 0.75);
-  color: #e8d7b3;
-  transition: all 0.2s;
-  margin-top: 4px;
-}
-.dhac-create-btn:hover {
-  background: rgba(10, 12, 28, 0.92);
-  border-color: rgba(233, 202, 147, 0.75);
-  color: #f6e8c8;
-  box-shadow: inset 0 0 0 1px rgba(255, 222, 161, 0.08);
-}
-
-/* --- Role Tip Tooltip --- */
-.dhac-role-select-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.dhac-role-select-row select { flex: 1; }
-
-.dhac-role-tip-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.dhac-role-tip-btn {
-  background: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: transparent;
   border: none;
-  color: #ffd700;
+  color: var(--dhac-text-faint);
   cursor: pointer;
-  font-size: 14px;
-  padding: 2px 4px;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  border-radius: var(--dhac-radius-sm);
+  font-size: 10px;
+  transition: color var(--dhac-ease);
+  align-self: center;
 }
-.dhac-role-tip-btn:hover {
-  opacity: 1;
-}
-
-.dhac-role-tip-popup {
-  display: none;
-  position: absolute;
-  top: calc(100% + 8px);
-  right: -8px;
-  width: 320px;
-  background: #1a1a2e;
-  border: 1px solid rgba(255, 215, 0, 0.35);
-  border-radius: 6px;
-  padding: 10px 12px;
-  z-index: 1000;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 12px rgba(255, 215, 0, 0.08);
-  font-size: 12px;
-  line-height: 1.45;
-  color: #d0d0d0;
-}
-.dhac-role-tip-popup::before {
-  content: "";
-  position: absolute;
-  top: -6px;
-  right: 14px;
-  width: 10px;
-  height: 10px;
-  background: #1a1a2e;
-  border-top: 1px solid rgba(255, 215, 0, 0.35);
-  border-left: 1px solid rgba(255, 215, 0, 0.35);
-  transform: rotate(45deg);
-}
-
-.dhac-role-tip-wrapper:hover .dhac-role-tip-popup {
-  display: block;
-}
-
-.dhac-role-tip-header {
-  font-size: 13px;
-  font-weight: bold;
-  color: #ffd700;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-}
-.dhac-role-tip-summary {
-  font-style: italic;
-  color: #e0d0b0;
-  margin-bottom: 8px;
-  font-size: 11px;
-}
-.dhac-role-tip-section {
-  margin-bottom: 5px;
-}
-.dhac-role-tip-label {
-  font-weight: bold;
-  color: #e0c878;
-  font-size: 11px;
-}
-.dhac-role-tip-extra {
+.dhac-setting-reset-btn:hover { color: var(--dhac-gold); }
+.dhac-font-settings-reset {
+  width: 100%;
   margin-top: 8px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(255, 215, 0, 0.15);
-  color: #b8d0b8;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: #b0b8c8;
+  border-radius: var(--dhac-radius);
+  padding: 5px 8px;
   font-size: 11px;
-}
-.dhac-role-tip-extra i {
-  color: #ffd700;
-  margin-right: 4px;
-}
-
-/* --- Bottom Button Row (Add Feature + Common Features) --- */
-.dhac-btn-row-bottom {
-  display: flex;
-  gap: 6px;
-  margin-top: 4px;
-  flex-shrink: 0;
-}
-.dhac-btn-row-bottom .dhac-btn-add-bottom {
-  flex: 1;
-  margin-top: 0;
-}
-.dhac-btn-common-features {
-  flex: 1;
-  background: rgba(20, 15, 35, 0.65);
-  border: 1px dashed rgba(255, 215, 0, 0.35);
-  color: #ffd700;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 13px;
-  transition: all 0.2s;
-  text-align: center;
+  transition: all var(--dhac-ease);
 }
-.dhac-btn-common-features:hover {
-  background: rgba(40, 30, 60, 0.8);
-  border-color: rgba(255, 215, 0, 0.6);
-  color: #ffe44d;
-}
-.dhac-btn-common-features i {
-  margin-right: 4px;
+.dhac-font-settings-reset:hover {
+  border-color: rgba(245,158,11,0.38);
+  color: #fbbf24;
 }
 
-/* --- Light Theme Support (Foundry light mode) --- */
+/* =============================================================
+   LIGHT THEME SUPPORT
+   ============================================================= */
 body.theme-light #one-minute-adversaries,
 .theme-light #one-minute-adversaries {
   background: #f2efe8 !important;
-  box-shadow: 0 0 20px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) !important;
 }
 body.theme-light #one-minute-adversaries .window-content,
 .theme-light #one-minute-adversaries .window-content {
   background: #f2efe8;
   color: #2a241b;
 }
-body.theme-light #one-minute-adversaries .dhac-section-title,
-.theme-light #one-minute-adversaries .dhac-section-title {
-  color: #3b3021;
-  border-bottom-color: rgba(80, 60, 35, 0.15);
+body.theme-light #one-minute-adversaries .dhac-layout,
+.theme-light #one-minute-adversaries .dhac-layout {
+  --dhac-bg:           #f2efe8;
+  --dhac-surface:      #ede8de;
+  --dhac-card:         #e8e2d5;
+  --dhac-card-hover:   #e2dcd0;
+  --dhac-border:       rgba(80,60,35,0.12);
+  --dhac-border-mid:   rgba(80,60,35,0.2);
+  --dhac-border-subtle:rgba(80,60,35,0.07);
+  --dhac-accent:       #b91c1c;
+  --dhac-accent-soft:  rgba(185,28,28,0.1);
+  --dhac-accent-glow:  rgba(185,28,28,0.15);
+  --dhac-gold:         #92400e;
+  --dhac-gold-soft:    rgba(146,64,14,0.08);
+  --dhac-gold-muted:   rgba(146,64,14,0.65);
+  --dhac-green:        #15803d;
+  --dhac-green-dark:   #14532d;
+  --dhac-green-mid:    #166534;
+  --dhac-green-glow:   rgba(21,128,61,0.2);
+  --dhac-blue:         #1d4ed8;
+  --dhac-blue-glow:    rgba(29,78,216,0.14);
+  --dhac-text:         #2a241b;
+  --dhac-text-muted:   #6a5a46;
+  --dhac-text-faint:   #a08060;
+  background: #f2efe8;
 }
-body.theme-light #one-minute-adversaries .dhac-topbar,
-.theme-light #one-minute-adversaries .dhac-topbar,
-body.theme-light #one-minute-adversaries .dhac-footer,
-.theme-light #one-minute-adversaries .dhac-footer {
-  border-color: rgba(90, 70, 45, 0.18);
-}
-body.theme-light #one-minute-adversaries .dhac-topbar-field label,
-.theme-light #one-minute-adversaries .dhac-topbar-field label,
-body.theme-light #one-minute-adversaries .dhac-stat label,
-.theme-light #one-minute-adversaries .dhac-stat label,
-body.theme-light #one-minute-adversaries .dhac-field label,
-.theme-light #one-minute-adversaries .dhac-field label,
-body.theme-light #one-minute-adversaries .dhac-experiences-header label,
-.theme-light #one-minute-adversaries .dhac-experiences-header label,
-body.theme-light #one-minute-adversaries .dhac-effects-help,
-.theme-light #one-minute-adversaries .dhac-effects-help {
-  color: #6a5a46;
-}
-body.theme-light #one-minute-adversaries .dhac-range,
-.theme-light #one-minute-adversaries .dhac-range {
-  color: #9a6a00;
-  opacity: 0.95;
-}
+
+/* Light theme inputs */
 body.theme-light #one-minute-adversaries .dhac-topbar input,
 .theme-light #one-minute-adversaries .dhac-topbar input,
 body.theme-light #one-minute-adversaries .dhac-topbar select,
@@ -917,9 +1335,9 @@ body.theme-light #one-minute-adversaries .dhac-feature-card textarea,
 .theme-light #one-minute-adversaries .dhac-feature-card textarea,
 body.theme-light #one-minute-adversaries .dhac-effect-value-input,
 .theme-light #one-minute-adversaries .dhac-effect-value-input {
-  background: rgba(255,255,255,0.8);
-  color: #221d16;
-  border-color: rgba(90, 70, 45, 0.18);
+  background: rgba(255,255,255,0.75);
+  color: #2a241b;
+  border-color: rgba(80,60,35,0.14);
 }
 body.theme-light #one-minute-adversaries .dhac-topbar select option,
 .theme-light #one-minute-adversaries .dhac-topbar select option,
@@ -929,44 +1347,35 @@ body.theme-light #one-minute-adversaries .dhac-feature-type-select option,
 .theme-light #one-minute-adversaries .dhac-feature-type-select option,
 body.theme-light #one-minute-adversaries .dhac-effect-value-input option,
 .theme-light #one-minute-adversaries .dhac-effect-value-input option {
-  background: #f4f1ea;
-  color: #221d16;
+  background: #f0ece4;
+  color: #2a241b;
+}
+body.theme-light #one-minute-adversaries .dhac-stat input,
+.theme-light #one-minute-adversaries .dhac-stat input {
+  background: rgba(255,255,255,0.75);
+  border-top-color: rgba(185,28,28,0.28);
 }
 body.theme-light #one-minute-adversaries .dhac-feature-card,
 .theme-light #one-minute-adversaries .dhac-feature-card {
-  background: rgba(255,255,255,0.55);
-  border-color: rgba(90, 70, 45, 0.16);
+  background: rgba(255,255,255,0.5);
+  border-color: rgba(80,60,35,0.11);
+}
+body.theme-light #one-minute-adversaries .dhac-right-tabs,
+.theme-light #one-minute-adversaries .dhac-right-tabs {
+  background: rgba(0,0,0,0.04);
 }
 body.theme-light #one-minute-adversaries .dhac-right-tab,
-.theme-light #one-minute-adversaries .dhac-right-tab,
-body.theme-light #one-minute-adversaries .dhac-btn-add,
-.theme-light #one-minute-adversaries .dhac-btn-add,
-body.theme-light #one-minute-adversaries .dhac-btn-add-bottom,
-.theme-light #one-minute-adversaries .dhac-btn-add-bottom,
-body.theme-light #one-minute-adversaries .dhac-btn-add-inline,
-.theme-light #one-minute-adversaries .dhac-btn-add-inline,
-body.theme-light #one-minute-adversaries .dhac-btn-reset,
-.theme-light #one-minute-adversaries .dhac-btn-reset {
-  background: #ece8dd;
-  color: #3a2f23;
-  border-color: rgba(90, 70, 45, 0.2);
-}
+.theme-light #one-minute-adversaries .dhac-right-tab { color: #6a5a46; }
 body.theme-light #one-minute-adversaries .dhac-right-tab:hover,
-.theme-light #one-minute-adversaries .dhac-right-tab:hover,
-body.theme-light #one-minute-adversaries .dhac-btn-add:hover,
-.theme-light #one-minute-adversaries .dhac-btn-add:hover,
-body.theme-light #one-minute-adversaries .dhac-btn-add-bottom:hover,
-.theme-light #one-minute-adversaries .dhac-btn-add-bottom:hover,
-body.theme-light #one-minute-adversaries .dhac-btn-add-inline:hover,
-.theme-light #one-minute-adversaries .dhac-btn-add-inline:hover {
-  background: #e4ded0;
-  color: #241d15;
+.theme-light #one-minute-adversaries .dhac-right-tab:hover {
+  background: rgba(0,0,0,0.06);
+  color: #2a241b;
 }
 body.theme-light #one-minute-adversaries .dhac-right-tab.is-active,
 .theme-light #one-minute-adversaries .dhac-right-tab.is-active {
-  background: rgba(40, 160, 40, 0.12);
-  color: #205c20;
-  border-color: rgba(40, 160, 40, 0.35);
+  background: rgba(21,128,61,0.1);
+  border-color: rgba(21,128,61,0.2);
+  color: #14532d;
 }
 body.theme-light #one-minute-adversaries .dhac-feature-image-btn,
 .theme-light #one-minute-adversaries .dhac-feature-image-btn,
@@ -974,132 +1383,142 @@ body.theme-light #one-minute-adversaries .dhac-actor-image-btn,
 .theme-light #one-minute-adversaries .dhac-actor-image-btn,
 body.theme-light #one-minute-adversaries .dhac-feature-image-reset-btn,
 .theme-light #one-minute-adversaries .dhac-feature-image-reset-btn {
-  background: rgba(255,255,255,0.75);
-  border-color: rgba(90, 70, 45, 0.18);
+  background: rgba(255,255,255,0.7);
+  border-color: rgba(80,60,35,0.14);
   color: #5b4b39;
-}
-body.theme-light #one-minute-adversaries .dhac-effects-group,
-.theme-light #one-minute-adversaries .dhac-effects-group {
-  border-top-color: rgba(90, 70, 45, 0.12);
-}
-body.theme-light #one-minute-adversaries .dhac-effects-group-title,
-.theme-light #one-minute-adversaries .dhac-effects-group-title {
-  color: #8b6508;
-}
-body.theme-light #one-minute-adversaries .dhac-effect-toggle,
-.theme-light #one-minute-adversaries .dhac-effect-toggle {
-  color: #2a241b;
-  background: rgba(180, 40, 40, 0.08);
-  border-color: rgba(180, 40, 40, 0.22);
-}
-body.theme-light #one-minute-adversaries .dhac-effect-toggle:hover,
-.theme-light #one-minute-adversaries .dhac-effect-toggle:hover {
-  background: rgba(180, 40, 40, 0.13);
-}
-body.theme-light #one-minute-adversaries .dhac-effect-toggle.is-on,
-.theme-light #one-minute-adversaries .dhac-effect-toggle.is-on {
-  background: rgba(40, 160, 40, 0.12);
-  border-color: rgba(40, 160, 40, 0.3);
-}
-body.theme-light #one-minute-adversaries .dhac-effect-toggle-state,
-.theme-light #one-minute-adversaries .dhac-effect-toggle-state {
-  color: #6a5a46;
 }
 body.theme-light #one-minute-adversaries .dhac-btn-create,
 .theme-light #one-minute-adversaries .dhac-btn-create {
-  background: #3a6b3a;
-  border-color: #3fa43f;
-  color: #fff;
+  background: linear-gradient(135deg, #14532d, #166534);
+  color: #dcfce7;
 }
 body.theme-light #one-minute-adversaries .dhac-btn-create:hover,
 .theme-light #one-minute-adversaries .dhac-btn-create:hover {
-  background: #447b44;
+  background: linear-gradient(135deg, #166534, #15803d);
 }
-body.theme-light #one-minute-adversaries .dhac-role-tip-btn,
-.theme-light #one-minute-adversaries .dhac-role-tip-btn {
-  color: #b07b00;
+body.theme-light #one-minute-adversaries .dhac-btn-reset,
+.theme-light #one-minute-adversaries .dhac-btn-reset {
+  background: rgba(255,255,255,0.5);
+  border-color: rgba(185,28,28,0.2);
+  color: #b91c1c;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-reset:hover,
+.theme-light #one-minute-adversaries .dhac-btn-reset:hover {
+  background: rgba(185,28,28,0.06);
+}
+body.theme-light #one-minute-adversaries .dhac-btn-autofill,
+.theme-light #one-minute-adversaries .dhac-btn-autofill {
+  background: rgba(146,64,14,0.08);
+  border-color: rgba(146,64,14,0.28);
+  color: #92400e;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-autofill:hover,
+.theme-light #one-minute-adversaries .dhac-btn-autofill:hover {
+  background: rgba(146,64,14,0.14);
+}
+body.theme-light #one-minute-adversaries .dhac-btn-add,
+.theme-light #one-minute-adversaries .dhac-btn-add,
+body.theme-light #one-minute-adversaries .dhac-btn-add-inline,
+.theme-light #one-minute-adversaries .dhac-btn-add-inline {
+  background: rgba(255,255,255,0.5);
+  border-color: rgba(80,60,35,0.14);
+  color: #5b4b39;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-add:hover,
+.theme-light #one-minute-adversaries .dhac-btn-add:hover,
+body.theme-light #one-minute-adversaries .dhac-btn-add-inline:hover,
+.theme-light #one-minute-adversaries .dhac-btn-add-inline:hover {
+  background: rgba(29,78,216,0.06);
+  border-color: rgba(29,78,216,0.28);
+  color: #1d4ed8;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-add-bottom,
+.theme-light #one-minute-adversaries .dhac-btn-add-bottom {
+  background: rgba(255,255,255,0.35);
+  border-color: rgba(80,60,35,0.14);
+  color: #6a5a46;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-add-bottom:hover,
+.theme-light #one-minute-adversaries .dhac-btn-add-bottom:hover {
+  background: rgba(29,78,216,0.06);
+  border-color: rgba(29,78,216,0.24);
+  color: #1d4ed8;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-common-features,
+.theme-light #one-minute-adversaries .dhac-btn-common-features {
+  background: rgba(146,64,14,0.05);
+  border-color: rgba(146,64,14,0.2);
+  color: #92400e;
+}
+body.theme-light #one-minute-adversaries .dhac-btn-common-features:hover,
+.theme-light #one-minute-adversaries .dhac-btn-common-features:hover {
+  background: rgba(146,64,14,0.1);
+  border-color: rgba(146,64,14,0.32);
+}
+body.theme-light #one-minute-adversaries .dhac-effects-group,
+.theme-light #one-minute-adversaries .dhac-effects-group {
+  border-top-color: rgba(80,60,35,0.09);
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle,
+.theme-light #one-minute-adversaries .dhac-effect-toggle {
+  background: rgba(185,28,28,0.06);
+  border-color: rgba(185,28,28,0.16);
+  color: #2a241b;
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle:hover,
+.theme-light #one-minute-adversaries .dhac-effect-toggle:hover {
+  background: rgba(185,28,28,0.1);
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle.is-on,
+.theme-light #one-minute-adversaries .dhac-effect-toggle.is-on {
+  background: rgba(21,128,61,0.08);
+  border-color: rgba(21,128,61,0.22);
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle-state,
+.theme-light #one-minute-adversaries .dhac-effect-toggle-state {
+  color: rgba(185,28,28,0.58);
+}
+body.theme-light #one-minute-adversaries .dhac-effect-toggle.is-on .dhac-effect-toggle-state,
+.theme-light #one-minute-adversaries .dhac-effect-toggle.is-on .dhac-effect-toggle-state {
+  color: #15803d;
 }
 body.theme-light #one-minute-adversaries .dhac-role-tip-popup,
 .theme-light #one-minute-adversaries .dhac-role-tip-popup {
   background: #fffdf7;
   color: #2c2318;
-  border-color: rgba(176, 123, 0, 0.35);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.16);
+  border-color: rgba(146,64,14,0.28);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
 }
 body.theme-light #one-minute-adversaries .dhac-role-tip-popup::before,
 .theme-light #one-minute-adversaries .dhac-role-tip-popup::before {
   background: #fffdf7;
-  border-top-color: rgba(176, 123, 0, 0.35);
-  border-left-color: rgba(176, 123, 0, 0.35);
-}
-body.theme-light #one-minute-adversaries .dhac-role-tip-header,
-.theme-light #one-minute-adversaries .dhac-role-tip-header {
-  color: #9a6a00;
-  border-bottom-color: rgba(176, 123, 0, 0.16);
-}
-body.theme-light #one-minute-adversaries .dhac-role-tip-summary,
-.theme-light #one-minute-adversaries .dhac-role-tip-summary {
-  color: #6a5841;
-}
-body.theme-light #one-minute-adversaries .dhac-role-tip-label,
-.theme-light #one-minute-adversaries .dhac-role-tip-label {
-  color: #7b5a17;
-}
-body.theme-light #one-minute-adversaries .dhac-role-tip-extra,
-.theme-light #one-minute-adversaries .dhac-role-tip-extra {
-  color: #365636;
-  border-top-color: rgba(90, 70, 45, 0.12);
-}
-body.theme-light #one-minute-adversaries .dhac-btn-common-features,
-.theme-light #one-minute-adversaries .dhac-btn-common-features {
-  background: rgba(176, 123, 0, 0.06);
-  border-color: rgba(176, 123, 0, 0.28);
-  color: #8e6400;
-}
-body.theme-light #one-minute-adversaries .dhac-btn-common-features:hover,
-.theme-light #one-minute-adversaries .dhac-btn-common-features:hover {
-  background: rgba(176, 123, 0, 0.12);
-  border-color: rgba(176, 123, 0, 0.4);
-  color: #6f4f00;
-}
-body.theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder,
-.theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder {
-  color: rgba(34, 29, 22, 0.45);
+  border-top-color: rgba(146,64,14,0.28);
+  border-left-color: rgba(146,64,14,0.28);
 }
 body.theme-light #one-minute-adversaries .dhac-header-settings-panel,
 .theme-light #one-minute-adversaries .dhac-header-settings-panel {
-  background: #fffdf7;
-  border-color: rgba(90, 70, 45, 0.18);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.16);
-}
-body.theme-light #one-minute-adversaries .dhac-font-settings-title,
-.theme-light #one-minute-adversaries .dhac-font-settings-title {
-  color: #5b4630;
-}
-body.theme-light #one-minute-adversaries .dhac-font-setting-row,
-.theme-light #one-minute-adversaries .dhac-font-setting-row {
-  color: #3a2f23;
-}
-body.theme-light #one-minute-adversaries .dhac-font-setting-row output,
-.theme-light #one-minute-adversaries .dhac-font-setting-row output {
-  color: #8e6400;
+  background: #faf7f1;
+  border-color: rgba(80,60,35,0.13);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
 }
 body.theme-light #one-minute-adversaries .dhac-font-settings-reset,
 .theme-light #one-minute-adversaries .dhac-font-settings-reset {
   background: #ece8dd;
-  border-color: rgba(90, 70, 45, 0.2);
+  border-color: rgba(80,60,35,0.17);
   color: #3a2f23;
 }
 body.theme-light #one-minute-adversaries .dhac-font-settings-reset:hover,
 .theme-light #one-minute-adversaries .dhac-font-settings-reset:hover {
-  background: #e4ded0;
-  border-color: rgba(176, 123, 0, 0.35);
-  color: #241d15;
+  border-color: rgba(146,64,14,0.32);
+  color: #6b3c09;
 }
 body.theme-light #one-minute-adversaries .dhac-col-stats::-webkit-scrollbar-thumb,
 .theme-light #one-minute-adversaries .dhac-col-stats::-webkit-scrollbar-thumb,
 body.theme-light #one-minute-adversaries .dhac-features-scroll::-webkit-scrollbar-thumb,
 .theme-light #one-minute-adversaries .dhac-features-scroll::-webkit-scrollbar-thumb {
-  background: rgba(80, 60, 35, 0.2);
+  background: rgba(80,60,35,0.17);
 }
-
+body.theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder,
+.theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder {
+  color: rgba(42,36,27,0.32);
+}

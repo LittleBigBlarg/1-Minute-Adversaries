@@ -5,6 +5,8 @@ const DEFAULT_FEATURE_ICON = "systems/daggerheart/assets/icons/documents/items/s
 const DEFAULT_ACTOR_ICON = "icons/svg/skull.svg";
 const DEFAULT_ATTACK_ICON = "icons/magic/death/skull-humanoid-white-blue.webp";
 const FONT_SETTINGS_STORAGE_KEY = `${MODULE_ID}.fontSettings`;
+const GLASS_OPACITY_STORAGE_KEY = `${MODULE_ID}.glassOpacity`;
+const DEFAULT_GLASS_OPACITY = 65;
 const DEFAULT_FONT_SETTINGS = Object.freeze({
   nameInput: 14,
   featureName: 13,
@@ -34,9 +36,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     description: "", motives: "",
     difficulty: 12, majorThreshold: 6, severeThreshold: 10,
     hp: 4, stress: 3, atk: 1,
+    minionPassiveValue: 4,
+    groupAttackDamage: 4, groupAttackType: "physical",
     weaponImg: DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
     weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
+    weaponDamageFlat: 4,
     weaponDamageType: "physical",
     effects: {
       physicalSeverityReductionEnabled: false,
@@ -51,6 +56,14 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     experiences: [AdversaryCreatorApp._newExperience()],
     features: [AdversaryCreatorApp._newFeature()],
   };
+
+  static _parseMinionDice(diceStr) {
+    if (!diceStr) return null;
+    const m = String(diceStr).match(/^(\d+)\s*[–-]\s*(\d+)/);
+    if (!m) return null;
+    const min = parseInt(m[1]), max = parseInt(m[2]);
+    return { rangeStr: `${min}-${max}`, mid: Math.round((min + max) / 2) };
+  }
 
   static _newExperience() {
     return { id: foundry.utils.randomID(), name: "", bonus: 2 };
@@ -96,7 +109,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     id: "one-minute-adversaries",
     tag: "form",
     window: { title: "1-Minute Adversaries", icon: "fas fa-skull-crossbones", resizable: true },
-    position: { width: 740, height: 660 },
+    position: { width: 820, height: 720 },
     actions: {
       autofill: AdversaryCreatorApp._onAutofill,
       addFeature: AdversaryCreatorApp._onAddFeature,
@@ -115,6 +128,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       resetForm: AdversaryCreatorApp._onResetForm,
       toggleAction: AdversaryCreatorApp._onToggleAction,
       addCommonFeatures: AdversaryCreatorApp._onAddCommonFeatures,
+      toggleGroupAttackType: AdversaryCreatorApp._onToggleGroupAttackType,
     },
   };
 
@@ -152,6 +166,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       isFeaturesTab: s.rightTab !== "effects",
       isEffectsTab: s.rightTab === "effects",
       roleTip: ROLE_TIPS[s.role] ?? null,
+      isMinionRole: s.role === "minion",
+      minionDiceRangeStr: (() => {
+        if (s.role !== "minion") return "";
+        const parsed = AdversaryCreatorApp._parseMinionDice(BENCHMARKS.minion?.[s.tier]?.dice?.[0]);
+        return parsed?.rangeStr ?? "";
+      })(),
+      minionPassiveValue: s.minionPassiveValue,
     };
   }
 
@@ -161,7 +182,48 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this._applyFontSettingsCssVars();
     this._ensureHeaderFontSettingsControl();
     html.querySelector("[name='tier']")?.addEventListener("change", () => { this._readForm(); this.render(); });
-    html.querySelector("[name='role']")?.addEventListener("change", () => { this._readForm(); this.render(); });
+    html.querySelector("[name='role']")?.addEventListener("change", () => {
+      this._readForm();
+      // When switching to minion, seed minionPassiveValue from the benchmark if not yet set
+      if (this._state.role === "minion" && !this._state.minionPassiveValue) {
+        const parsed = AdversaryCreatorApp._parseMinionDice(BENCHMARKS.minion?.[this._state.tier]?.dice?.[0]);
+        if (parsed) {
+          this._state.minionPassiveValue = parsed.mid;
+          this._state.weaponDamageFlat = parsed.mid;
+          this._state.groupAttackDamage = parsed.mid;
+        }
+      }
+      this.render();
+    });
+
+    // Minion Passive Value: live-update pinned feature card name + description without full re-render
+    const minionPassiveInput = html.querySelector("[name='minionPassiveValue']");
+    if (minionPassiveInput) {
+      minionPassiveInput.addEventListener("input", () => {
+        const val = Math.max(0, Number(minionPassiveInput.value) || 0);
+        this._state.minionPassiveValue = val;
+        const xEl = html.querySelector(".dhac-pinned-x");
+        if (xEl) xEl.textContent = `(${val})`;
+        const midEl = html.querySelector(".dhac-pinned-passive-mid");
+        if (midEl) midEl.textContent = val;
+      });
+    }
+
+    // Group Attack: live-update pinned card when damage or type changes
+    const groupDmgInput = html.querySelector("[name='groupAttackDamage']");
+    const groupTypeSelect = html.querySelector("[name='groupAttackType']");
+    const updateGroupAttackCard = () => {
+      const dmg = Number(html.querySelector("[name='groupAttackDamage']")?.value) || 0;
+      const type = html.querySelector("[name='groupAttackType']")?.value ?? "physical";
+      this._state.groupAttackDamage = dmg;
+      this._state.groupAttackType = type;
+      const dmgEl = html.querySelector(".dhac-pinned-group-dmg");
+      if (dmgEl) dmgEl.textContent = dmg;
+      const typeEl = html.querySelector(".dhac-pinned-group-type");
+      if (typeEl) typeEl.textContent = type;
+    };
+    groupDmgInput?.addEventListener("input", updateGroupAttackCard);
+    groupTypeSelect?.addEventListener("change", updateGroupAttackCard);
 
     // Render initial toggle pills for all features
     for (let i = 0; i < this._state.features.length; i++) {
@@ -175,9 +237,19 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       this._renderFeatureToggles(i);
     }
 
-    // Listen to feature description changes for auto-detection
+    // Listen to feature description changes for auto-detection + auto-size
+    const autosizeTextarea = (el) => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    };
+
     html.querySelectorAll("[data-desc-index]").forEach(textarea => {
+      // Defer initial sizing so the browser has finished layout before measuring scrollHeight
+      requestAnimationFrame(() => autosizeTextarea(textarea));
+
       textarea.addEventListener("input", (ev) => {
+        autosizeTextarea(ev.target);
+
         const idx = Number(ev.target.dataset.descIndex);
         this._state.features[idx].description = ev.target.value;
         const prevTimer = this._featureDescParseTimers.get(idx);
@@ -189,6 +261,60 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         }, 150);
         this._featureDescParseTimers.set(idx, timer);
       });
+    });
+
+    // Mouse-wheel to nudge number inputs — scroll up = +1, scroll down = −1
+    html.querySelectorAll(
+      ".dhac-stat input[type='number'], .dhac-field input[type='number'], .dhac-experience-row input[type='number']"
+    ).forEach(input => {
+      input.addEventListener("wheel", (ev) => {
+        ev.preventDefault();
+        const step = Number(input.step) || 1;
+        const min  = input.min !== "" ? Number(input.min) : -Infinity;
+        const delta = ev.deltaY < 0 ? step : -step;
+        input.value = String(Math.max(min, Number(input.value || 0) + delta));
+        input.dispatchEvent(new Event("input",  { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        // Brief expand-and-settle animation for visual feedback
+        input.classList.remove("dhac-num-bump");
+        void input.offsetWidth; // force reflow to restart animation
+        input.classList.add("dhac-num-bump");
+      }, { passive: false });
+    });
+
+    this._setupRoleTipPin(html);
+  }
+
+  /** Handle click-to-pin on role tip popup and external doc link. */
+  _setupRoleTipPin(html) {
+    // Remove previous document listener if re-rendering
+    if (this._roleTipClickOutsideHandler) {
+      document.removeEventListener("pointerdown", this._roleTipClickOutsideHandler);
+      this._roleTipClickOutsideHandler = null;
+    }
+
+    const wrappers = html.querySelectorAll(".dhac-role-tip-wrapper");
+    if (!wrappers.length) return;
+
+    wrappers.forEach(wrapper => {
+      const btn = wrapper.querySelector(".dhac-role-tip-btn");
+      btn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        wrapper.classList.toggle("is-pinned");
+      });
+    });
+
+    // Click outside closes pinned popups
+    this._roleTipClickOutsideHandler = (e) => {
+      wrappers.forEach(wrapper => {
+        if (!wrapper.contains(e.target)) wrapper.classList.remove("is-pinned");
+      });
+    };
+    document.addEventListener("pointerdown", this._roleTipClickOutsideHandler);
+
+    // Open external doc link via window.open so Electron doesn't swallow it
+    html.querySelectorAll(".dhac-role-tip-doc-link").forEach(a => {
+      a.addEventListener("click", (e) => { e.preventDefault(); window.open(a.href, "_blank"); });
     });
   }
 
@@ -210,6 +336,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     target.style.setProperty("--dhac-font-feature-description", `${this._fontSettings.featureDescription}px`);
     target.style.setProperty("--dhac-font-feature-pills", `${this._fontSettings.featurePills}px`);
     target.style.setProperty("--dhac-font-labels", `${this._fontSettings.labels}px`);
+    // Apply saved glass opacity
+    try {
+      const saved = globalThis.localStorage?.getItem(GLASS_OPACITY_STORAGE_KEY);
+      const val = saved !== null ? Math.max(10, Math.min(100, Number(saved))) : DEFAULT_GLASS_OPACITY;
+      el.style.setProperty("--dhac-glass-opacity", val / 100);
+    } catch {}
   }
 
   _ensureHeaderFontSettingsControl() {
@@ -234,7 +366,16 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       const panel = document.createElement("div");
       panel.className = "dhac-header-settings-panel";
       panel.innerHTML = `
-        <div class="dhac-font-settings-title">Font Sizes</div>
+        <div class="dhac-font-settings-title">Appearance</div>
+        <div class="dhac-font-settings-grid">
+          <label class="dhac-font-setting-row">
+            <span>Glass Opacity</span>
+            <input type="range" min="10" max="100" step="1" data-glass-key="opacity">
+            <output data-glass-output="opacity"></output>
+            <button type="button" class="dhac-setting-reset-btn" data-glass-reset="opacity" title="Reset to default"><i class="fas fa-rotate-left"></i></button>
+          </label>
+        </div>
+        <div class="dhac-font-settings-title" style="margin-top:10px">Font Sizes</div>
         <div class="dhac-font-settings-grid">
           ${this._fontSettingRowHtml("Adversary Name", "nameInput")}
           ${this._fontSettingRowHtml("Feature Name", "featureName")}
@@ -243,7 +384,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
           ${this._fontSettingRowHtml("Feature Buttons", "featurePills")}
           ${this._fontSettingRowHtml("Small Labels", "labels")}
         </div>
-        <button type="button" class="dhac-font-settings-reset" data-font-action="reset">Reset Defaults</button>
+        <button type="button" class="dhac-font-settings-reset" data-font-action="reset">Reset All Defaults</button>
       `;
 
       button.addEventListener("click", (ev) => {
@@ -260,18 +401,46 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       panel.addEventListener("input", (ev) => {
         const input = ev.target;
         if (!(input instanceof HTMLInputElement)) return;
-        if (input.dataset.fontKey === undefined) return;
-        this._fontSettings[input.dataset.fontKey] = Math.max(9, Math.min(24, Number(input.value) || 0));
-        this._applyFontSettingsCssVars();
-        this._saveFontSettings();
+        if (input.dataset.fontKey !== undefined) {
+          this._fontSettings[input.dataset.fontKey] = Math.max(9, Math.min(24, Number(input.value) || 0));
+          this._applyFontSettingsCssVars();
+          this._saveFontSettings();
+        } else if (input.dataset.glassKey !== undefined) {
+          const val = Math.max(10, Math.min(100, Number(input.value) || DEFAULT_GLASS_OPACITY));
+          this.element.style.setProperty("--dhac-glass-opacity", val / 100);
+          try { globalThis.localStorage?.setItem(GLASS_OPACITY_STORAGE_KEY, String(val)); } catch {}
+        }
         this._syncFontSettingsPanel(wrap);
       });
       panel.addEventListener("click", (ev) => {
-        const target = ev.target?.closest?.("[data-font-action='reset']");
-        if (!target) return;
+        // Per-row font reset
+        const fontReset = ev.target?.closest?.("[data-font-reset]");
+        if (fontReset) {
+          const key = fontReset.dataset.fontReset;
+          if (key in DEFAULT_FONT_SETTINGS) {
+            this._fontSettings[key] = DEFAULT_FONT_SETTINGS[key];
+            this._applyFontSettingsCssVars();
+            this._saveFontSettings();
+            this._syncFontSettingsPanel(wrap);
+          }
+          return;
+        }
+        // Per-row glass opacity reset
+        const glassReset = ev.target?.closest?.("[data-glass-reset]");
+        if (glassReset) {
+          this.element.style.setProperty("--dhac-glass-opacity", DEFAULT_GLASS_OPACITY / 100);
+          try { globalThis.localStorage?.removeItem(GLASS_OPACITY_STORAGE_KEY); } catch {}
+          this._syncFontSettingsPanel(wrap);
+          return;
+        }
+        // Reset all defaults
+        const resetAll = ev.target?.closest?.("[data-font-action='reset']");
+        if (!resetAll) return;
         this._fontSettings = { ...DEFAULT_FONT_SETTINGS };
         this._applyFontSettingsCssVars();
         this._saveFontSettings();
+        this.element.style.setProperty("--dhac-glass-opacity", DEFAULT_GLASS_OPACITY / 100);
+        try { globalThis.localStorage?.removeItem(GLASS_OPACITY_STORAGE_KEY); } catch {}
         this._syncFontSettingsPanel(wrap);
       });
 
@@ -305,6 +474,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         <span>${label}</span>
         <input type="range" min="9" max="24" step="1" data-font-key="${key}">
         <output data-font-output="${key}"></output>
+        <button type="button" class="dhac-setting-reset-btn" data-font-reset="${key}" title="Reset to default"><i class="fas fa-rotate-left"></i></button>
       </label>
     `;
   }
@@ -318,12 +488,26 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       button.setAttribute("aria-expanded", this._fontSettingsPanelOpen ? "true" : "false");
     }
 
+    // Sync font sliders
     for (const [key, value] of Object.entries(this._fontSettings)) {
       const input = wrap.querySelector(`input[data-font-key='${key}']`);
       if (input && input.value !== String(value)) input.value = String(value);
       const output = wrap.querySelector(`[data-font-output='${key}']`);
       if (output) output.textContent = `${value}px`;
     }
+
+    // Sync glass opacity slider
+    let glassVal = DEFAULT_GLASS_OPACITY;
+    try {
+      const saved = globalThis.localStorage?.getItem(GLASS_OPACITY_STORAGE_KEY);
+      if (saved !== null) glassVal = Math.max(10, Math.min(100, Number(saved)));
+    } catch {}
+    const glassInput = wrap.querySelector("input[data-glass-key='opacity']");
+    if (glassInput && glassInput.value !== String(glassVal)) glassInput.value = String(glassVal);
+    const glassOutput = wrap.querySelector("[data-glass-output='opacity']");
+    if (glassOutput) glassOutput.textContent = `${glassVal}%`;
+    // Apply to window on first open in case CSS default hasn't been overridden yet
+    if (this.element) this.element.style.setProperty("--dhac-glass-opacity", glassVal / 100);
   }
 
   /**
@@ -473,6 +657,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     s.majorThreshold = Number(html.querySelector("[name='majorThreshold']")?.value) || 0;
     s.severeThreshold = Number(html.querySelector("[name='severeThreshold']")?.value) || 0;
     s.hp = Number(html.querySelector("[name='hp']")?.value) || 0;
+    const minionPassiveEl = html.querySelector("[name='minionPassiveValue']");
+    if (minionPassiveEl) s.minionPassiveValue = Math.max(0, Number(minionPassiveEl.value) || 0);
     s.stress = Number(html.querySelector("[name='stress']")?.value) || 0;
     s.atk = Number(html.querySelector("[name='atk']")?.value) || 0;
     s.weaponImg = html.querySelector("[name='weaponImg']")?.value ?? s.weaponImg;
@@ -481,7 +667,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     s.weaponDamageDice = html.querySelector("[name='weaponDamageDice']")?.value ?? s.weaponDamageDice;
     s.weaponDamageCount = Number(html.querySelector("[name='weaponDamageCount']")?.value) || 1;
     s.weaponDamageBonus = Number(html.querySelector("[name='weaponDamageBonus']")?.value) || 0;
+    const flatEl = html.querySelector("[name='weaponDamageFlat']");
+    if (flatEl) s.weaponDamageFlat = Number(flatEl.value) || 0;
     s.weaponDamageType = html.querySelector("[name='weaponDamageType']")?.value ?? s.weaponDamageType;
+    const groupDmgEl = html.querySelector("[name='groupAttackDamage']");
+    if (groupDmgEl) s.groupAttackDamage = Number(groupDmgEl.value) || 0;
+    const groupTypeEl = html.querySelector("[name='groupAttackType']");
+    if (groupTypeEl) s.groupAttackType = groupTypeEl.value ?? s.groupAttackType;
     for (let i = 0; i < s.experiences.length; i++) {
       const e = s.experiences[i];
       e.name = html.querySelector(`[name='experience.${i}.name']`)?.value ?? e.name;
@@ -515,11 +707,18 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     s.atk = mid(benchmark.atk);
     for (const exp of s.experiences) exp.bonus = EXPERIENCE_BY_TIER[s.tier] || 2;
     if (benchmark.dice?.[0]) {
-      const m = benchmark.dice[0].match(/^(\d*)d(\d+)(?:\+(\d+))?$/);
-      if (m) {
-        s.weaponDamageCount = parseInt(m[1]) || 1;
-        s.weaponDamageDice = `d${m[2]}`;
-        s.weaponDamageBonus = parseInt(m[3]) || 0;
+      const diceStr = benchmark.dice[0];
+      const diceM = diceStr.match(/^(\d*)d(\d+)(?:\+(\d+))?$/);
+      const flatM = diceStr.match(/^(\d+)\s*[–-]\s*(\d+)/);
+      if (diceM) {
+        s.weaponDamageCount = parseInt(diceM[1]) || 1;
+        s.weaponDamageDice = `d${diceM[2]}`;
+        s.weaponDamageBonus = parseInt(diceM[3]) || 0;
+      } else if (flatM) {
+        const mid = Math.round((parseInt(flatM[1]) + parseInt(flatM[2])) / 2);
+        s.weaponDamageFlat = mid;
+        s.minionPassiveValue = mid;
+        s.groupAttackDamage = mid;
       }
     }
     this.render();
@@ -688,6 +887,23 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this.render();
   }
 
+  static _onToggleGroupAttackType(event, target) {
+    this._readForm();
+    const type = target.dataset.type;
+    if (!type) return;
+    this._state.groupAttackType = type;
+    // Update hidden input
+    const hidden = this.element?.querySelector("[name='groupAttackType']");
+    if (hidden) hidden.value = type;
+    // Update type span in description
+    const typeSpan = this.element?.querySelector(".dhac-pinned-group-type");
+    if (typeSpan) typeSpan.textContent = type;
+    // Swap button active states without full re-render
+    this.element?.querySelectorAll(".dhac-type-toggle").forEach(btn => {
+      btn.classList.toggle("is-on", btn.dataset.type === type);
+    });
+  }
+
   static _onResetForm() {
     if (this._editingActorId) {
       const actor = game.actors?.get(this._editingActorId);
@@ -706,9 +922,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       description: "", motives: "",
       difficulty: 12, majorThreshold: 6, severeThreshold: 10,
       hp: 4, stress: 3, atk: 1,
+      minionPassiveValue: 4,
+      groupAttackDamage: 4, groupAttackType: "physical",
       weaponImg: DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
       weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
+      weaponDamageFlat: 4,
       weaponDamageType: "physical",
       effects: {
         physicalSeverityReductionEnabled: false,
@@ -733,6 +952,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
   static _buildFeatureItem(feature, featureIndex) {
     const actions = {};
     let desc = feature.description;
+    // Convert <name> placeholder to Foundry's @Lookup tag
+    desc = desc.replace(/<name>/gi, "@Lookup[@name]");
     // Process markdown-style formatting: ***bold italic***, **italic**, *bold*
     // (Daggerheart SRD uses bold for dice, bold for game terms)
     desc = desc.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
@@ -948,15 +1169,16 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         motivesAndTactics: s.motives,
         difficulty: s.difficulty,
         damageThresholds: { major: s.majorThreshold, severe: s.severeThreshold },
-        resources: { hitPoints: { max: s.hp }, stress: { max: s.stress } },
+        resources: { hitPoints: { max: s.role === "minion" ? 1 : s.hp }, stress: { max: s.stress } },
         attack: {
           name: s.weaponName, range: s.weaponRange,
           roll: { type: "attack", bonus: String(s.atk) },
           img: s.weaponImg || DEFAULT_ATTACK_ICON,
           damage: {
             parts: [{
-              value: { custom: { enabled: false, formula: "" }, flatMultiplier: s.weaponDamageCount,
-                dice: s.weaponDamageDice, bonus: s.weaponDamageBonus || null, multiplier: "flat" },
+              value: s.role === "minion"
+                ? { custom: { enabled: true, formula: String(s.weaponDamageFlat) }, multiplier: "flat", flatMultiplier: 1, dice: "d6", bonus: null }
+                : { custom: { enabled: false, formula: "" }, flatMultiplier: s.weaponDamageCount, dice: s.weaponDamageDice, bonus: s.weaponDamageBonus || null, multiplier: "flat" },
               type: [s.weaponDamageType], applyTo: "hitPoints",
             }],
             includeBase: false, direct: false,
@@ -971,13 +1193,57 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         systemData.experiences[expId] = { name: exp.name.trim(), value: exp.bonus, description: "" };
       }
 
-      const items = s.features
-        .filter(f => f.name.trim() || f.description.trim()) // Include if they have name OR description
-        .map((f, i) => AdversaryCreatorApp._buildFeatureItem(f, i));
+      const autoItems = [];
+      if (s.role === "minion") {
+        const passiveVal = s.minionPassiveValue || 1;
+        const flatDmg = s.weaponDamageFlat;
+        const groupDmg = s.groupAttackDamage ?? flatDmg;
+        const groupType = s.groupAttackType ?? "physical";
+        const fearId = foundry.utils.randomID(16);
+        autoItems.push({
+          name: `Minion(${passiveVal})`,
+          type: "feature",
+          img: DEFAULT_FEATURE_ICON,
+          flags: { [MODULE_ID]: { autoMinion: true } },
+          system: {
+            featureForm: "passive",
+            description: `<p>This adversary is defeated when they take any damage. For every <strong>${passiveVal}</strong> damage a PC deals to this adversary, defeat an additional Minion within range the attack would succeed against.</p>`,
+          },
+        });
+        autoItems.push({
+          name: "Group Attack",
+          type: "feature",
+          img: DEFAULT_FEATURE_ICON,
+          flags: { [MODULE_ID]: { autoMinion: true } },
+          system: {
+            featureForm: "action",
+            description: `<p>Spend a Fear to choose a target and spotlight all adversaries within Close range of them. Those Minions move into Melee range of the target and make one shared attack roll. On a success, they deal [[/r ${groupDmg}]] ${groupType} damage each. Combine this damage.</p>`,
+            actions: {
+              [fearId]: {
+                type: "effect", _id: fearId, systemPath: "actions", baseAction: false,
+                description: "", chatDisplay: true, originItem: { type: "itemCollection" },
+                actionType: "action", triggers: [],
+                cost: [{ scalable: false, key: "fear", value: 1, itemId: null, step: null, consumeOnSuccess: false }],
+                uses: { value: null, max: "", recovery: null, consumeOnSuccess: false },
+                effects: [], target: { type: "any", amount: null },
+                name: "Spend Fear", range: "",
+              },
+            },
+          },
+        });
+      }
+
+      const items = [
+        ...autoItems,
+        ...s.features
+          .filter(f => f.name.trim() || f.description.trim())
+          .map((f, i) => AdversaryCreatorApp._buildFeatureItem(f, i)),
+      ];
 
       const actorData = {
         name: s.name.trim(), type: "adversary",
         system: systemData, items, effects: AdversaryCreatorApp._buildResistanceEffects(s.effects), img: s.img || DEFAULT_ACTOR_ICON,
+        ...(s.role === "minion" ? { flags: { [MODULE_ID]: { minionPassiveValue: s.minionPassiveValue, groupAttackDamage: s.groupAttackDamage, groupAttackType: s.groupAttackType } } } : {}),
       };
 
       if (this._editingActorId) {
@@ -990,6 +1256,11 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
           name: actorData.name,
           type: actorData.type,
           system: actorData.system,
+          ...(s.role === "minion" ? {
+            [`flags.${MODULE_ID}.minionPassiveValue`]: s.minionPassiveValue,
+            [`flags.${MODULE_ID}.groupAttackDamage`]: s.groupAttackDamage,
+            [`flags.${MODULE_ID}.groupAttackType`]: s.groupAttackType,
+          } : {}),
         };
 
         for (const expId of oldExperienceIds) {
@@ -1051,7 +1322,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     }));
 
     const features = actor.items
-      .filter(item => item.type === "feature")
+      .filter(item => item.type === "feature" && !item.flags?.[MODULE_ID]?.autoMinion)
       .map((item, index) => this._featureStateFromItem(item, index));
 
     this._state = {
@@ -1066,6 +1337,9 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       majorThreshold: Number(system.damageThresholds?.major) || 0,
       severeThreshold: Number(system.damageThresholds?.severe) || 0,
       hp: Number(system.resources?.hitPoints?.max) || 0,
+      minionPassiveValue: Number(actor.flags?.[MODULE_ID]?.minionPassiveValue) || 4,
+      groupAttackDamage: Number(actor.flags?.[MODULE_ID]?.groupAttackDamage) || 4,
+      groupAttackType: actor.flags?.[MODULE_ID]?.groupAttackType ?? "physical",
       stress: Number(system.resources?.stress?.max) || 0,
       atk: Number.parseInt(attack.roll?.bonus, 10) || 0,
       weaponImg: attack.img ?? DEFAULT_ATTACK_ICON,
@@ -1074,6 +1348,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       weaponDamageDice: damageValue.dice ?? "d8",
       weaponDamageCount: Number(damageValue.flatMultiplier) || 1,
       weaponDamageBonus: Number(damageValue.bonus) || 0,
+      weaponDamageFlat: damageValue.custom?.enabled ? (Number(damageValue.custom.formula) || 0) : 4,
       weaponDamageType: damagePart.type?.[0] ?? "physical",
       effects: this._readResistanceEffectsFromActor(actor),
       experiences: experiences.length ? experiences : [AdversaryCreatorApp._newExperience()],
@@ -1221,6 +1496,10 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     const closePanel = headerWrap?._dhacClosePanelHandler;
     if (typeof closePanel === "function") {
       document.removeEventListener("pointerdown", closePanel);
+    }
+    if (this._roleTipClickOutsideHandler) {
+      document.removeEventListener("pointerdown", this._roleTipClickOutsideHandler);
+      this._roleTipClickOutsideHandler = null;
     }
     return super.close(options);
   }

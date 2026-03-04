@@ -67,6 +67,12 @@
               <i class="fas fa-lightbulb"></i> {{roleTip.tip}}
             </div>
             {{/if}}
+            <div class="dhac-role-tip-link">
+              <a href="https://docs.google.com/document/d/12g-obIkdGJ_iLL19bS0oKPDDvPbPI9pWUiFqGw8ED88/edit?tab=t.0#heading=h.mdjo15f06zjv"
+                 target="_blank" rel="noopener" class="dhac-role-tip-doc-link">
+                <i class="fas fa-external-link-alt"></i> More info: RightKnightToFight's Guide
+              </a>
+            </div>
           </div>
         </div>
         {{/if}}
@@ -89,10 +95,18 @@
           <label>Difficulty {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.difficulty}})</span>{{/if}}</label>
           <input type="number" name="difficulty" value="{{difficulty}}" />
         </div>
+        {{#if isMinionRole}}
+        <div class="dhac-stat">
+          <label>Minion Passive {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}</label>
+          <input type="number" name="minionPassiveValue" value="{{minionPassiveValue}}" min="1" />
+          <input type="hidden" name="hp" value="1" />
+        </div>
+        {{else}}
         <div class="dhac-stat">
           <label>HP {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.hp}})</span>{{/if}}</label>
           <input type="number" name="hp" value="{{hp}}" />
         </div>
+        {{/if}}
         <div class="dhac-stat">
           <label>Stress {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.stress}})</span>{{/if}}</label>
           <input type="number" name="stress" value="{{stress}}" />
@@ -100,6 +114,19 @@
       </div>
 
       <div class="dhac-stat-row">
+        {{#if isMinionRole}}
+        <input type="hidden" name="majorThreshold" value="0" />
+        <input type="hidden" name="severeThreshold" value="0" />
+        <div class="dhac-stat">
+          <label>ATK {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.atk}})</span>{{/if}}</label>
+          <input type="number" name="atk" value="{{atk}}" />
+        </div>
+        <div class="dhac-stat">
+          <label>Group Atk {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}</label>
+          <input type="number" name="groupAttackDamage" value="{{groupAttackDamage}}" min="0" />
+        </div>
+        <input type="hidden" name="groupAttackType" value="{{groupAttackType}}" />
+        {{else}}
         <div class="dhac-stat">
           <label>Major {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.major}})</span>{{/if}}</label>
           <input type="number" name="majorThreshold" value="{{majorThreshold}}" />
@@ -112,6 +139,7 @@
           <label>ATK {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.atk}})</span>{{/if}}</label>
           <input type="number" name="atk" value="{{atk}}" />
         </div>
+        {{/if}}
       </div>
 
       <h3 class="dhac-section-title"><i class="fas fa-crosshairs"></i> Attack {{#if benchmarkStr}}<span class="dhac-range">({{benchmarkStr.dice}})</span>{{/if}}</h3>
@@ -140,6 +168,12 @@
       </div>
 
       <div class="dhac-field-row">
+        {{#if isMinionRole}}
+        <div class="dhac-field">
+          <label>Flat Damage</label>
+          <input type="number" name="weaponDamageFlat" value="{{weaponDamageFlat}}" min="0" />
+        </div>
+        {{else}}
         <div class="dhac-field">
           <label>Count</label>
           <input type="number" name="weaponDamageCount" value="{{weaponDamageCount}}" min="1" />
@@ -159,6 +193,7 @@
           <label>Bonus</label>
           <input type="number" name="weaponDamageBonus" value="{{weaponDamageBonus}}" />
         </div>
+        {{/if}}
         <div class="dhac-field">
           <label>Type</label>
           <select name="weaponDamageType">
@@ -215,6 +250,30 @@
 
       {{#if isFeaturesTab}}
       <div class="dhac-features-scroll">
+        {{#if isMinionRole}}
+        <div class="dhac-feature-card dhac-feature-pinned">
+          <div class="dhac-pinned-feature-header">
+            <span class="dhac-feature-pinned-type">Passive</span>
+            {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}
+            <span class="dhac-pinned-lock" title="Auto-generated for minion role"><i class="fas fa-lock"></i></span>
+          </div>
+          <div class="dhac-feature-pinned-name">Minion<span class="dhac-pinned-x">({{minionPassiveValue}})</span></div>
+          <div class="dhac-feature-pinned-desc">This adversary is defeated when they take any damage. For every <strong class="dhac-pinned-passive-mid">{{minionPassiveValue}}</strong> damage a PC deals to this adversary, defeat an additional Minion within range the attack would succeed against.</div>
+        </div>
+        <div class="dhac-feature-card dhac-feature-pinned">
+          <div class="dhac-pinned-feature-header">
+            <span class="dhac-feature-pinned-type">Action</span>
+            {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}
+            <span class="dhac-pinned-lock" title="Auto-generated for minion role"><i class="fas fa-lock"></i></span>
+          </div>
+          <div class="dhac-feature-pinned-name">Group Attack</div>
+          <div class="dhac-feature-pinned-desc">Spend a Fear to choose a target and spotlight all adversaries within Close range of them. Those Minions move into Melee range of the target and make one shared attack roll. On a success, they deal <strong><span class="dhac-pinned-group-dmg">{{groupAttackDamage}}</span></strong> <span class="dhac-pinned-group-type">{{groupAttackType}}</span> damage each. Combine this damage.</div>
+          <div class="dhac-group-attack-type-row">
+            <button type="button" class="dhac-type-toggle {{#if (eq groupAttackType 'physical')}}is-on{{/if}}" data-action="toggleGroupAttackType" data-type="physical">Physical</button>
+            <button type="button" class="dhac-type-toggle {{#if (eq groupAttackType 'magical')}}is-on{{/if}}" data-action="toggleGroupAttackType" data-type="magical">Magical</button>
+          </div>
+        </div>
+        {{/if}}
         {{#each features}}
         <div class="dhac-feature-card">
           <div class="dhac-feature-top">
@@ -245,7 +304,7 @@
             </select>
             <button type="button" data-action="removeFeature" data-feature-id="{{this.id}}" class="dhac-btn-remove" title="Remove"><i class="fas fa-trash"></i></button>
           </div>
-          <textarea name="feature.{{@index}}.description" data-desc-index="{{@index}}" rows="3" placeholder="Write naturally — buttons auto-detect from your text. Example: Mark a Stress to make an attack against all targets within Close range dealing 2d8+4 physical damage. Each target must make an Agility Reaction Roll.">{{this.description}}</textarea>
+          <textarea name="feature.{{@index}}.description" data-desc-index="{{@index}}" rows="1" placeholder="Write naturally — buttons auto-detect from your text. Example: Mark a Stress to make an attack against all targets within Close range dealing 2d8+4 physical damage. Each target must make an Agility Reaction Roll.">{{this.description}}</textarea>
           <div class="dhac-toggles-row" data-toggles-index="{{@index}}">
             {{!-- Toggles rendered by JS _onRender --}}
           </div>
