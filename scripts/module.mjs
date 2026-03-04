@@ -21,13 +21,13 @@ Hooks.once("init", () => {
     precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
   });
 
-  game.settings.register(MODULE_ID, "injectSidebarButton", {
-    name: "Show 'Create Adversary' button in Actor sidebar",
-    hint: "Adds a quick-access button to the Actors tab header. Disable if it conflicts with other modules.",
+  game.settings.register(MODULE_ID, "hideQuickEditButton", {
+    name: "Hide 'Quick Edit' button on adversary sheet headers",
+    hint: "When enabled, the Quick Edit button will not be injected into adversary sheet headers. The Quick Edit option in the '...' menu is always available regardless.",
     scope: "world",
     config: true,
     type: Boolean,
-    default: true,
+    default: false,
     requiresReload: true,
   });
 });
@@ -45,10 +45,13 @@ Hooks.once("ready", () => {
   }
 });
 
-Hooks.on("renderActorDirectory", (app, html) => {
+// ---------------------------------------------------------------------------
+// Actors tab sidebar button — always present
+// ---------------------------------------------------------------------------
+
+Hooks.on("renderActorDirectory", (_app, html) => {
   if (!game.user.isGM) return;
-  if (!game.settings.get(MODULE_ID, "injectSidebarButton")) return;
-  const root = html instanceof HTMLElement ? html : (html[0] ?? html);
+  const root = html instanceof HTMLElement ? html : (html?.[0] ?? html);
   if (!root || root.querySelector(".dhac-create-adversary-btn")) return;
 
   const target = root.querySelector(".action-buttons")
@@ -56,33 +59,21 @@ Hooks.on("renderActorDirectory", (app, html) => {
     ?? root.querySelector(".directory-header");
   if (!target) return;
 
-  const exemplar = [...target.querySelectorAll("button, a")]
-    .find(el => !el.classList.contains("dhac-create-btn"));
-
-  const button = exemplar ? exemplar.cloneNode(true) : document.createElement("button");
-  if (!(button instanceof HTMLElement)) return;
-
-  button.replaceChildren();
-  if (button instanceof HTMLButtonElement) button.type = "button";
-  button.classList.add("dhac-create-adversary-btn");
-
-  // Remove attrs that could interfere when cloning another module's control.
-  for (const attr of ["data-action", "data-tooltip", "aria-controls", "id"]) {
-    button.removeAttribute(attr);
-  }
-
-  const icon = document.createElement("i");
-  icon.className = "fas fa-skull-crossbones";
-  button.append(icon, document.createTextNode(" Create Adversary"));
-
-  button.addEventListener("click", (ev) => {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "dhac-create-adversary-btn";
+  btn.innerHTML = `<i class="fas fa-skull-crossbones"></i> Create Adversary`;
+  btn.addEventListener("click", (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
     new AdversaryCreatorApp().render(true);
   });
-
-  target.appendChild(button);
+  target.appendChild(btn);
 });
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function getActorFromApp(app) {
   return app?.actor ?? app?.document ?? null;
@@ -93,13 +84,16 @@ function isAdversarySheetApp(app) {
   return Boolean(actor?.documentName === "Actor" && actor.type === "adversary");
 }
 
+// ---------------------------------------------------------------------------
+// Direct header button injection — respects hideQuickEditButton setting
+// ---------------------------------------------------------------------------
+
 function injectQuickEditButton(app, root) {
   if (!game.user.isGM) return;
   if (!isAdversarySheetApp(app) || !root) return;
+  if (game.settings.get(MODULE_ID, "hideQuickEditButton")) return;
   const actor = getActorFromApp(app);
 
-  // If the standard header hook was ignored by a custom sheet implementation,
-  // inject directly into the window header controls.
   if (root.querySelector(".dhac-quick-edit-btn")) return;
 
   const headerControls = root.querySelector(".window-header .header-control")
@@ -112,7 +106,7 @@ function injectQuickEditButton(app, root) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "header-control icon dhac-quick-edit-btn";
-    btn.dataset.action = "dhac-quick-edit";
+    btn.dataset.action = "dhac-quick-edit-direct";
     btn.innerHTML = `<i class="fas fa-pen-to-square"></i>`;
     btn.setAttribute("data-tooltip", "Quick Edit");
     btn.title = "Quick Edit";
@@ -128,15 +122,13 @@ function injectQuickEditButton(app, root) {
     return;
   }
 
-  // Last-resort fallback: inject a visible button at the top of the sheet content.
+  // Last-resort fallback: visible button at top of sheet content
   const content = root.querySelector(".window-content") ?? root;
   if (!content || content.querySelector(".dhac-quick-edit-inline")) return;
 
   const wrap = document.createElement("div");
   wrap.className = "dhac-quick-edit-inline";
-  wrap.style.display = "flex";
-  wrap.style.justifyContent = "flex-end";
-  wrap.style.padding = "0.5rem 0.75rem 0";
+  wrap.style.cssText = "display:flex;justify-content:flex-end;padding:0.5rem 0.75rem 0";
 
   const button = document.createElement("button");
   button.type = "button";
@@ -154,23 +146,51 @@ function injectQuickEditButton(app, root) {
   content.prepend(wrap);
 }
 
-// Foundry V13+ / ApplicationV2 sheets
+// ---------------------------------------------------------------------------
+// Foundry V13+ ApplicationV2 — "…" header controls dropdown
+// Always present regardless of the hideQuickEditButton setting.
+// ---------------------------------------------------------------------------
+
 Hooks.on("getHeaderControlsApplicationV2", (app, controls) => {
-  // Intentionally no-op for adversary sheets.
-  // Foundryborne's header styling/ordering is more reliable when we mirror PopOut's
-  // direct DOM insertion in renderApplicationV2.
   if (!game.user.isGM) return;
   if (!isAdversarySheetApp(app)) return;
+  controls.push({
+    icon: "fas fa-pen-to-square",
+    label: "Quick Edit",
+    action: "dhac-quick-edit",
+  });
 });
 
+// ApplicationV2 dispatches data-action clicks to methods on the app instance.
+// Since the Daggerheart sheet has no dhac-quick-edit method we intercept via
+// capture-phase event delegation on the sheet root.
 Hooks.on("renderApplicationV2", (app, element) => {
-  injectQuickEditButton(app, element instanceof HTMLElement ? element : app?.element);
+  const root = element instanceof HTMLElement ? element : app?.element;
+  if (!root) return;
+
+  injectQuickEditButton(app, root);
+
+  if (!game.user.isGM || !isAdversarySheetApp(app)) return;
+  if (root._dhacQuickEditDelegated) return;
+  root._dhacQuickEditDelegated = true;
+
+  const actor = getActorFromApp(app);
+  root.addEventListener("click", (ev) => {
+    if (!ev.target.closest('[data-action="dhac-quick-edit"]')) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    AdversaryCreatorApp.openForActor(actor);
+  }, true);
 });
 
-// Legacy V1 fallback (if a sheet still uses ActorSheet v1 APIs)
+// ---------------------------------------------------------------------------
+// Legacy V1 fallback (ActorSheet v1 API) — respects hideQuickEditButton
+// ---------------------------------------------------------------------------
+
 Hooks.on("getActorSheetHeaderButtons", (app, buttons) => {
   if (!game.user.isGM) return;
   if (!isAdversarySheetApp(app)) return;
+  if (game.settings.get(MODULE_ID, "hideQuickEditButton")) return;
 
   buttons.push({
     class: "dhac-quick-edit",
@@ -185,5 +205,3 @@ Hooks.on("renderActorSheet", (app, html) => {
   const root = html instanceof HTMLElement ? html : (html?.[0] ?? app?.element);
   injectQuickEditButton(app, root);
 });
-
-
