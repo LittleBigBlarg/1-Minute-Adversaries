@@ -1522,3 +1522,403 @@ body.theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder,
 .theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder {
   color: rgba(42,36,27,0.32);
 }
+
+/* =============================================================
+   IMAGE FAVORITES PICKER — popup window
+   ============================================================= */
+
+#dhac-image-favorites {
+  --dhac-glass-opacity: 0.65;
+  background: rgba(22, 22, 30, var(--dhac-glass-opacity)) !important;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.08) !important;
+}
+#dhac-image-favorites .window-content {
+  padding: 0 !important;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Two-panel layout */
+.dhac-fav-picker {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.dhac-fav-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Left panel — selected + default sections */
+.dhac-fav-selected-panel {
+  width: 130px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px;
+  gap: 0;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  overflow-y: auto;
+}
+.dhac-fav-selected-panel::-webkit-scrollbar { width: 3px; }
+.dhac-fav-selected-panel::-webkit-scrollbar-track { background: transparent; }
+.dhac-fav-selected-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.dhac-fav-panel-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.dhac-fav-panel-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 10px 0;
+  flex-shrink: 0;
+}
+
+.dhac-fav-panel-title {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255,255,255,0.3);
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+.dhac-fav-thumb-wrap {
+  width: 84px;
+  height: 84px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dhac-fav-thumb-wrap.dhac-fav-thumb-empty {
+  flex-direction: column;
+  gap: 4px;
+  color: rgba(255,255,255,0.2);
+  font-size: 9px;
+}
+.dhac-fav-thumb-wrap.dhac-fav-thumb-empty i {
+  font-size: 18px;
+  color: rgba(245,197,66,0.2);
+}
+.dhac-fav-panel-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+}
+
+.dhac-fav-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  width: 100%;
+  justify-content: center;
+  background: rgba(245,197,66,0.07);
+  border: 1px solid rgba(245,197,66,0.2);
+  border-radius: 5px;
+  color: rgba(245,197,66,0.65);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.dhac-fav-add-btn:hover {
+  background: rgba(245,197,66,0.14);
+  border-color: rgba(245,197,66,0.4);
+  color: #f5c542;
+}
+.dhac-fav-add-btn.is-saved {
+  background: rgba(245,197,66,0.12);
+  border-color: rgba(245,197,66,0.35);
+  color: #f5c542;
+}
+.dhac-fav-add-btn.is-saved:hover {
+  background: rgba(220,38,38,0.1);
+  border-color: rgba(220,38,38,0.3);
+  color: rgba(220,38,38,0.8);
+}
+
+.dhac-fav-default-label {
+  font-size: 9px;
+  color: rgba(245,197,66,0.6);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dhac-fav-default-hint {
+  font-size: 9px;
+  color: rgba(255,255,255,0.2);
+  text-align: center;
+  line-height: 1.3;
+}
+.dhac-fav-clear-default-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  width: 100%;
+  justify-content: center;
+  background: rgba(220,38,38,0.08);
+  border: 1px solid rgba(220,38,38,0.2);
+  border-radius: 5px;
+  color: rgba(220,38,38,0.55);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.dhac-fav-clear-default-btn:hover {
+  background: rgba(220,38,38,0.15);
+  border-color: rgba(220,38,38,0.4);
+  color: #ef4444;
+}
+
+/* Right panel — favorites grid */
+.dhac-fav-favorites-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dhac-fav-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-top: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+.dhac-fav-grid::-webkit-scrollbar { width: 4px; }
+.dhac-fav-grid::-webkit-scrollbar-track { background: transparent; }
+.dhac-fav-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+.dhac-fav-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.1s;
+  align-self: start; /* needed so aspect-ratio works inside a grid with overflow */
+}
+.dhac-fav-item:hover {
+  border-color: rgba(220,38,38,0.5);
+  transform: scale(1.04);
+}
+.dhac-fav-item.is-current {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220,38,38,0.25);
+}
+.dhac-fav-item.is-default {
+  border-color: rgba(245,197,66,0.5);
+}
+.dhac-fav-item.is-default.is-current {
+  border-color: #dc2626;
+}
+
+.dhac-fav-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  display: block;
+}
+
+/* Overlay buttons (crown + remove) — visible on hover, crown always visible if default */
+.dhac-fav-item-actions {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.dhac-fav-item:hover .dhac-fav-item-actions,
+.dhac-fav-item.is-default .dhac-fav-item-actions {
+  opacity: 1;
+}
+
+.dhac-fav-action-btn {
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.72);
+  border: none;
+  border-radius: 3px;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  font-size: 8px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.dhac-fav-crown.is-on { color: #f5c542; }
+.dhac-fav-crown:hover { color: #f5c542; }
+.dhac-fav-remove:hover { color: #dc2626; }
+
+/* Empty state (right panel) */
+.dhac-fav-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px 8px;
+  text-align: center;
+  color: rgba(255,255,255,0.3);
+  font-size: 11px;
+}
+.dhac-fav-empty-icon {
+  font-size: 22px;
+  color: rgba(245,197,66,0.25);
+  margin-bottom: 2px;
+}
+.dhac-fav-empty p { margin: 0; line-height: 1.4; }
+.dhac-fav-empty-hint {
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+}
+
+/* Footer */
+.dhac-fav-footer {
+  padding: 8px 10px 10px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.dhac-btn-browse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 16px;
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.dhac-btn-browse:hover {
+  background: rgba(220,38,38,0.1);
+  border-color: rgba(220,38,38,0.32);
+  color: rgba(255,255,255,0.9);
+}
+
+/* Light theme */
+body.theme-light #dhac-image-favorites,
+.theme-light #dhac-image-favorites {
+  background: rgba(250, 247, 241, 0.92) !important;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.2), 0 0 0 1px rgba(80,60,35,0.13) !important;
+}
+body.theme-light .dhac-fav-selected-panel,
+.theme-light .dhac-fav-selected-panel {
+  border-right-color: rgba(80,60,35,0.1);
+}
+body.theme-light .dhac-fav-panel-divider,
+.theme-light .dhac-fav-panel-divider {
+  background: rgba(80,60,35,0.1);
+}
+body.theme-light .dhac-fav-panel-title,
+.theme-light .dhac-fav-panel-title {
+  color: rgba(42,36,27,0.4);
+}
+body.theme-light .dhac-fav-thumb-wrap,
+.theme-light .dhac-fav-thumb-wrap {
+  border-color: rgba(80,60,35,0.13);
+  background: rgba(80,60,35,0.04);
+}
+body.theme-light .dhac-fav-default-hint,
+.theme-light .dhac-fav-default-hint {
+  color: rgba(42,36,27,0.3);
+}
+body.theme-light .dhac-fav-add-btn,
+.theme-light .dhac-fav-add-btn {
+  background: rgba(180,83,9,0.07);
+  border-color: rgba(180,83,9,0.2);
+  color: rgba(180,83,9,0.7);
+}
+body.theme-light .dhac-fav-add-btn:hover,
+.theme-light .dhac-fav-add-btn:hover {
+  background: rgba(180,83,9,0.13);
+  border-color: rgba(180,83,9,0.35);
+  color: #b45309;
+}
+body.theme-light .dhac-fav-add-btn.is-saved,
+.theme-light .dhac-fav-add-btn.is-saved {
+  background: rgba(180,83,9,0.1);
+  border-color: rgba(180,83,9,0.3);
+  color: #b45309;
+}
+body.theme-light .dhac-fav-item,
+.theme-light .dhac-fav-item {
+  border-color: rgba(80,60,35,0.12);
+  background: rgba(80,60,35,0.03);
+}
+body.theme-light .dhac-fav-item:hover,
+.theme-light .dhac-fav-item:hover {
+  border-color: rgba(146,64,14,0.4);
+}
+body.theme-light .dhac-fav-empty,
+.theme-light .dhac-fav-empty {
+  color: rgba(42,36,27,0.4);
+}
+body.theme-light .dhac-fav-footer,
+.theme-light .dhac-fav-footer {
+  border-top-color: rgba(80,60,35,0.1);
+}
+body.theme-light .dhac-btn-browse,
+.theme-light .dhac-btn-browse {
+  background: rgba(80,60,35,0.05);
+  border-color: rgba(80,60,35,0.14);
+  color: rgba(42,36,27,0.65);
+}
+body.theme-light .dhac-btn-browse:hover,
+.theme-light .dhac-btn-browse:hover {
+  background: rgba(146,64,14,0.08);
+  border-color: rgba(146,64,14,0.28);
+  color: #3a2f23;
+}
+body.theme-light .dhac-fav-clear-default-btn,
+.theme-light .dhac-fav-clear-default-btn {
+  background: rgba(185,28,28,0.06);
+  border-color: rgba(185,28,28,0.18);
+  color: rgba(185,28,28,0.6);
+}
+body.theme-light .dhac-fav-clear-default-btn:hover,
+.theme-light .dhac-fav-clear-default-btn:hover {
+  background: rgba(185,28,28,0.12);
+  border-color: rgba(185,28,28,0.35);
+  color: #b91c1c;
+}
