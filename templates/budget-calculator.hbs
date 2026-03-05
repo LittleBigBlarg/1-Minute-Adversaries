@@ -1,0 +1,53 @@
+<div class="dhac-bc-wrap">
+
+  {{!-- Header: players + BP summary --}}
+  <div class="dhac-bc-header">
+    <div class="dhac-bc-players-row">
+      <label class="dhac-bc-players-label"><i class="fas fa-users"></i> Players</label>
+      <input type="number" name="players" value="{{players}}" min="1" max="10" class="dhac-bc-players-input" />
+    </div>
+    <div class="dhac-bc-summary">
+      <span class="dhac-bc-spent">{{spent}}</span>
+      <span class="dhac-bc-sep">/</span>
+      <span class="dhac-bc-budget">{{budget}}</span>
+      <span class="dhac-bc-bp-label">BP</span>
+    </div>
+  </div>
+
+  {{!-- Progress bar --}}
+  <div class="dhac-bc-bar-wrap">
+    <div class="dhac-bc-bar">
+      <div class="dhac-bc-fill{{#if isOver}} is-over{{/if}}" style="width: {{percentUsed}}%"></div>
+    </div>
+  </div>
+
+  {{!-- Status line --}}
+  <div class="dhac-bc-status{{#if isOver}} is-over{{/if}}">
+    <i class="{{#if isOver}}fas fa-triangle-exclamation{{else}}fas fa-check-circle{{/if}}"></i>
+    <span class="dhac-bc-status-label">{{#if isOver}}Over budget by{{else}}Remaining{{/if}}</span>
+    <strong class="dhac-bc-remaining">{{remainingAbs}}</strong> BP
+  </div>
+
+  {{!-- Role rows --}}
+  <div class="dhac-bc-roles">
+    {{#each roles}}
+    <div class="dhac-bc-role-row{{#if count}} has-count{{/if}}">
+      <span class="dhac-bc-role-label">{{label}}</span>
+      <span class="dhac-bc-role-cost">{{cost}} BP</span>
+      <div class="dhac-bc-counter">
+        <button type="button" class="dhac-bc-btn dhac-bc-dec" data-action="decrement" data-role="{{role}}" {{#unless count}}disabled{{/unless}}>−</button>
+        <span class="dhac-bc-count" data-count-role="{{role}}">{{count}}</span>
+        <button type="button" class="dhac-bc-btn dhac-bc-inc" data-action="increment" data-role="{{role}}">+</button>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+
+  {{!-- Footer --}}
+  <div class="dhac-bc-footer">
+    <button type="button" data-action="reset" class="dhac-bc-reset-btn">
+      <i class="fas fa-rotate-left"></i> Reset
+    </button>
+  </div>
+
+</div>
