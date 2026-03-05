@@ -1981,7 +1981,7 @@ body.theme-light .dhac-fav-clear-default-btn:hover,
    Budget Calculator — sidebar button + ApplicationV2 window
    =========================================================================== */
 
-/* Sidebar fieldset wrapper — matches native Daggerheart GM Tools fieldset style */
+/* Sidebar fieldset wrapper */
 .dhac-budget-fieldset {
   border: 2px groove rgb(243, 194, 103);
   border-radius: 6px;
@@ -1995,7 +1995,7 @@ body.theme-light .dhac-fav-clear-default-btn:hover,
   padding: 0 2px;
 }
 
-/* Sidebar inject button — matches native Daggerheart GM Tools button style */
+/* Sidebar inject button */
 .dhac-budget-calc-btn {
   display: flex;
   align-items: center;
@@ -2013,9 +2013,7 @@ body.theme-light .dhac-fav-clear-default-btn:hover,
   cursor: pointer;
   transition: filter 0.15s;
 }
-.dhac-budget-calc-btn:hover {
-  filter: brightness(1.08);
-}
+.dhac-budget-calc-btn:hover { filter: brightness(1.08); }
 
 /* Calculator window */
 #dhac-budget-calculator {
@@ -2024,17 +2022,15 @@ body.theme-light .dhac-fav-clear-default-btn:hover,
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   box-shadow: 0 12px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06);
 }
-#dhac-budget-calculator .window-content {
-  padding: 0;
-}
+#dhac-budget-calculator .window-content { padding: 0; }
 
 .dhac-bc-wrap {
   display: flex;
   flex-direction: column;
-  gap: 0;
   padding: 12px;
+  gap: 0;
   color: rgba(235,232,225,0.9);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* Header */
@@ -2048,40 +2044,56 @@ body.theme-light .dhac-fav-clear-default-btn:hover,
 .dhac-bc-players-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 .dhac-bc-players-label {
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(235,232,225,0.55);
   white-space: nowrap;
+  margin-right: 2px;
 }
-.dhac-bc-players-input {
-  width: 46px;
-  padding: 2px 5px;
-  text-align: center;
-  background: rgba(0,0,0,0.3);
+.dhac-bc-player-btn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 4px;
+  border-radius: 3px;
+  color: rgba(235,232,225,0.7);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, color 0.1s;
+}
+.dhac-bc-player-btn:hover {
+  background: rgba(245,158,11,0.15);
+  color: var(--dhac-gold, #f5c542);
+}
+.dhac-bc-player-count {
+  min-width: 22px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
   color: rgba(235,232,225,0.9);
-  font-size: 12px;
 }
 .dhac-bc-summary {
   display: flex;
   align-items: baseline;
   gap: 3px;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1;
 }
-.dhac-bc-spent { color: rgba(235,232,225,0.9); }
-.dhac-bc-sep   { color: rgba(235,232,225,0.3); font-size: 14px; }
+.dhac-bc-spent  { color: rgba(235,232,225,0.9); }
+.dhac-bc-sep    { color: rgba(235,232,225,0.3); font-size: 16px; }
 .dhac-bc-budget { color: rgba(235,232,225,0.45); }
-.dhac-bc-bp-label { font-size: 11px; color: rgba(235,232,225,0.4); font-weight: 400; margin-left: 2px; }
+.dhac-bc-bp-label { font-size: 13px; color: rgba(235,232,225,0.4); font-weight: 400; margin-left: 2px; }
 
 /* Progress bar */
-.dhac-bc-bar-wrap {
-  margin-bottom: 8px;
-}
+.dhac-bc-bar-wrap { margin-bottom: 6px; }
 .dhac-bc-bar {
   height: 5px;
   background: rgba(255,255,255,0.08);
@@ -2090,69 +2102,72 @@ body.theme-light .dhac-fav-clear-default-btn:hover,
 }
 .dhac-bc-fill {
   height: 100%;
-  background: var(--dhac-gold, #f5c542);
+  background: transparent;
   border-radius: 3px;
-  transition: width 0.2s ease, background 0.2s ease;
+  transition: width 0.2s ease;
 }
 .dhac-bc-fill.is-over { background: #dc2626; }
 
-/* Status row */
+/* Status */
 .dhac-bc-status {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(245,158,11,0.85);
   margin-bottom: 10px;
 }
 .dhac-bc-status.is-over { color: #f87171; }
-.dhac-bc-status strong { font-weight: 700; }
+.dhac-bc-status strong  { font-weight: 700; }
 
-/* Role rows */
+/* Two-column layout */
+.dhac-bc-columns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Left: role list */
 .dhac-bc-roles {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-bottom: 10px;
 }
 .dhac-bc-role-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 6px;
+  gap: 5px;
+  padding: 3px 5px;
   border-radius: 4px;
   transition: background 0.1s;
 }
-.dhac-bc-role-row.has-count {
-  background: rgba(245,158,11,0.07);
-}
+.dhac-bc-role-row.has-count { background: rgba(245,158,11,0.07); }
 .dhac-bc-role-label {
   flex: 1;
   color: rgba(235,232,225,0.8);
 }
 .dhac-bc-role-cost {
-  font-size: 10px;
-  color: rgba(235,232,225,0.35);
-  min-width: 28px;
+  font-size: 12px;
+  color: rgba(235,232,225,0.3);
+  min-width: 30px;
   text-align: right;
 }
 .dhac-bc-counter {
   display: flex;
   align-items: center;
-  gap: 0;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 4px;
   overflow: hidden;
 }
 .dhac-bc-btn {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   padding: 0;
   background: rgba(255,255,255,0.04);
   border: none;
   color: rgba(235,232,225,0.7);
-  font-size: 14px;
-  line-height: 1;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.1s, color 0.1s;
   display: flex;
@@ -2163,29 +2178,163 @@ body.theme-light .dhac-fav-clear-default-btn:hover,
   background: rgba(245,158,11,0.15);
   color: var(--dhac-gold, #f5c542);
 }
-.dhac-bc-btn:disabled {
-  opacity: 0.25;
-  cursor: default;
-}
+.dhac-bc-btn:disabled { opacity: 0.2; cursor: default; }
 .dhac-bc-count {
+  min-width: 26px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(235,232,225,0.9);
+  background: rgba(0,0,0,0.2);
+  line-height: 20px;
+}
+
+/* Right: overview panel */
+.dhac-bc-overview {
+  width: 130px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 5px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dhac-bc-overview-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(235,232,225,0.35);
+  margin-bottom: 2px;
+}
+.dhac-bc-ov-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+.dhac-bc-ov-label { flex: 1; color: rgba(235,232,225,0.8); }
+.dhac-bc-ov-count { color: rgba(235,232,225,0.45); font-size: 12px; }
+.dhac-bc-ov-total { color: var(--dhac-gold, #f5c542); font-size: 12px; min-width: 28px; text-align: right; }
+.dhac-bc-ov-empty {
+  color: rgba(235,232,225,0.25);
+  font-size: 13px;
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: auto;
+  line-height: 1.5;
+}
+
+/* Adjustments section */
+.dhac-bc-adj-section {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 8px;
+  margin-bottom: 8px;
+}
+.dhac-bc-adj-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(235,232,225,0.35);
+  margin-bottom: 5px;
+}
+.dhac-bc-adj-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+.dhac-bc-adj-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 3px 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+  font-size: 13px;
+  color: rgba(235,232,225,0.6);
+}
+.dhac-bc-adj-stepper {
+  cursor: default;
+  align-items: center;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 6px;
+}
+.dhac-bc-adj-stepper:hover { background: none; }
+.dhac-bc-lower-tier-val {
   min-width: 24px;
   text-align: center;
   font-size: 12px;
   font-weight: 600;
   color: rgba(235,232,225,0.9);
-  background: rgba(0,0,0,0.2);
-  padding: 0 2px;
-  line-height: 22px;
+}
+.dhac-bc-adj-row:hover { background: rgba(255,255,255,0.04); }
+.dhac-bc-adj-row.is-on {
+  background: rgba(245,158,11,0.07);
+  color: rgba(235,232,225,0.9);
+}
+.dhac-bc-adj-row input[type="checkbox"] {
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: var(--dhac-gold, #f5c542);
+}
+.dhac-bc-adj-bp {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+  padding: 1px 3px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.dhac-bc-adj-bp.is-pos {
+  background: rgba(245,158,11,0.15);
+  color: var(--dhac-gold, #f5c542);
+}
+.dhac-bc-adj-bp.is-neg {
+  background: rgba(220,38,38,0.12);
+  color: #f87171;
+}
+.dhac-bc-adj-desc { line-height: 1.4; }
+
+/* Custom BP row */
+.dhac-bc-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 5px;
+}
+.dhac-bc-custom-label {
+  flex: 1;
+  font-size: 13px;
+  color: rgba(235,232,225,0.55);
+}
+.dhac-bc-custom-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dhac-bc-custom-val {
+  min-width: 28px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(235,232,225,0.9);
 }
 
 /* Footer */
 .dhac-bc-footer {
   display: flex;
   justify-content: flex-end;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 8px;
 }
 .dhac-bc-reset-btn {
-  padding: 3px 10px;
-  font-size: 11px;
+  padding: 4px 12px;
+  font-size: 13px;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 4px;

@@ -3,8 +3,10 @@
   {{!-- Header: players + BP summary --}}
   <div class="dhac-bc-header">
     <div class="dhac-bc-players-row">
-      <label class="dhac-bc-players-label"><i class="fas fa-users"></i> Players</label>
-      <input type="number" name="players" value="{{players}}" min="1" max="10" class="dhac-bc-players-input" />
+      <span class="dhac-bc-players-label"><i class="fas fa-users"></i> Players</span>
+      <button type="button" class="dhac-bc-player-btn" data-action="decrementPlayers">−</button>
+      <span class="dhac-bc-player-count">{{players}}</span>
+      <button type="button" class="dhac-bc-player-btn" data-action="incrementPlayers">+</button>
     </div>
     <div class="dhac-bc-summary">
       <span class="dhac-bc-spent">{{spent}}</span>
@@ -14,33 +16,75 @@
     </div>
   </div>
 
-  {{!-- Progress bar --}}
+  {{!-- Progress bar + status --}}
   <div class="dhac-bc-bar-wrap">
     <div class="dhac-bc-bar">
       <div class="dhac-bc-fill{{#if isOver}} is-over{{/if}}" style="width: {{percentUsed}}%"></div>
     </div>
   </div>
-
-  {{!-- Status line --}}
   <div class="dhac-bc-status{{#if isOver}} is-over{{/if}}">
     <i class="{{#if isOver}}fas fa-triangle-exclamation{{else}}fas fa-check-circle{{/if}}"></i>
     <span class="dhac-bc-status-label">{{#if isOver}}Over budget by{{else}}Remaining{{/if}}</span>
     <strong class="dhac-bc-remaining">{{remainingAbs}}</strong> BP
   </div>
 
-  {{!-- Role rows --}}
-  <div class="dhac-bc-roles">
-    {{#each roles}}
-    <div class="dhac-bc-role-row{{#if count}} has-count{{/if}}">
-      <span class="dhac-bc-role-label">{{label}}</span>
-      <span class="dhac-bc-role-cost">{{cost}} BP</span>
-      <div class="dhac-bc-counter">
-        <button type="button" class="dhac-bc-btn dhac-bc-dec" data-action="decrement" data-role="{{role}}" {{#unless count}}disabled{{/unless}}>−</button>
-        <span class="dhac-bc-count" data-count-role="{{role}}">{{count}}</span>
-        <button type="button" class="dhac-bc-btn dhac-bc-inc" data-action="increment" data-role="{{role}}">+</button>
+  {{!-- Two-column: role list + overview --}}
+  <div class="dhac-bc-columns">
+
+    {{!-- Left: role counters --}}
+    <div class="dhac-bc-roles">
+      {{#each roles}}
+      <div class="dhac-bc-role-row{{#if count}} has-count{{/if}}">
+        <span class="dhac-bc-role-label">{{label}}</span>
+        <span class="dhac-bc-role-cost">{{cost}} BP</span>
+        <div class="dhac-bc-counter">
+          <button type="button" class="dhac-bc-btn dhac-bc-dec" data-action="decrement" data-role="{{role}}"{{#unless count}} disabled{{/unless}}>−</button>
+          <span class="dhac-bc-count" data-count-role="{{role}}">{{count}}</span>
+          <button type="button" class="dhac-bc-btn dhac-bc-inc" data-action="increment" data-role="{{role}}">+</button>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    {{!-- Right: overview — both containers always in DOM, toggled via display --}}
+    <div class="dhac-bc-overview">
+      <div class="dhac-bc-overview-title">Overview</div>
+      <div class="dhac-bc-overview-list" style="{{#if hasAny}}{{else}}display:none{{/if}}">
+        {{#each overview}}
+        <div class="dhac-bc-ov-row">
+          <span class="dhac-bc-ov-label">{{label}}</span>
+          <span class="dhac-bc-ov-count">×{{count}}</span>
+          <span class="dhac-bc-ov-total">{{total}} BP</span>
+        </div>
+        {{/each}}
+      </div>
+      <div class="dhac-bc-ov-empty" style="{{#if hasAny}}display:none{{/if}}">No enemies<br>added yet</div>
+    </div>
+
+  </div>
+
+  {{!-- Adjustments --}}
+  <div class="dhac-bc-adj-section">
+    <div class="dhac-bc-adj-title">Adjustments</div>
+
+    <div class="dhac-bc-adj-list">
+      {{#each adjustments}}
+      <label class="dhac-bc-adj-row{{#if active}} is-on{{/if}}" title="{{description}}">
+        <input type="checkbox" data-action="toggleAdjustment" data-key="{{key}}" {{#if active}}checked{{/if}} />
+        <span class="dhac-bc-adj-bp {{#if positive}}is-pos{{else}}is-neg{{/if}}">{{bpLabel}}</span>
+        <span class="dhac-bc-adj-desc">{{description}}</span>
+      </label>
+      {{/each}}
+    </div>
+
+    <div class="dhac-bc-custom-row">
+      <span class="dhac-bc-custom-label">Custom BP</span>
+      <div class="dhac-bc-custom-controls">
+        <button type="button" class="dhac-bc-player-btn" data-action="decrementCustom">−</button>
+        <span class="dhac-bc-custom-val">{{customBPLabel}}</span>
+        <button type="button" class="dhac-bc-player-btn" data-action="incrementCustom">+</button>
       </div>
     </div>
-    {{/each}}
   </div>
 
   {{!-- Footer --}}
