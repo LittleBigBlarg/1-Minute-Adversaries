@@ -1,5 +1,5 @@
 import { BENCHMARKS, ROLES, RANGES, EXPERIENCE_BY_TIER, mid, rangeStr, ROLE_TIPS, ROLE_FEATURES } from "./benchmarks.mjs";
-import { ImageFavoritesPicker, addFavorite, getDefault } from "./image-favorites.mjs";
+import { ImageFavoritesPicker, getDefault } from "./image-favorites.mjs";
 
 const MODULE_ID = "one-minute-adversaries";
 const DEFAULT_FEATURE_ICON = "systems/daggerheart/assets/icons/documents/items/stars-stack.svg";
@@ -563,14 +563,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     f.damageRolls = newDamageRolls;
 
     // Detect "<trait> reaction roll" natural language patterns
-    const traits = ["strength", "instinct", "knowledge", "finesse", "presence", "agility"];
     const reactionRegex = /\b(strength|instinct|knowledge|finesse|presence|agility)\s+reaction(?:\s+rolls?)?\b/gi;
     const newReactionRolls = [];
     const seenReactionTraits = new Set();
     let m;
     while ((m = reactionRegex.exec(desc)) !== null) {
       const trait = m[1].toLowerCase();
-      if (!traits.includes(trait)) continue;
       if (seenReactionTraits.has(trait)) continue;
       seenReactionTraits.add(trait);
       const existing = prevReactionByTrait.get(trait);
@@ -1365,37 +1363,20 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       magicImmunity: false,
     };
 
-    const effects = Array.from(actor.effects ?? []);
-    for (const effect of effects) {
-      const changes = Array.isArray(effect.changes) ? effect.changes : [];
-      for (const change of changes) {
-        if (change?.key === "system.rules.damageReduction.reduceSeverity.physical" && String(change?.value) === "1") {
-          state.physicalSeverityReductionEnabled = true;
-          state.physicalSeverityReduction = 1;
-        }
-        if (change?.key === "system.rules.damageReduction.reduceSeverity.physical" && ["2", "3"].includes(String(change?.value))) {
-          state.physicalSeverityReductionEnabled = true;
-          state.physicalSeverityReduction = Number(change.value);
-        }
-        if (change?.key === "system.rules.damageReduction.reduceSeverity.magical" && String(change?.value) === "1") {
-          state.magicSeverityReductionEnabled = true;
-          state.magicSeverityReduction = 1;
-        }
-        if (change?.key === "system.rules.damageReduction.reduceSeverity.magical" && ["2", "3"].includes(String(change?.value))) {
-          state.magicSeverityReductionEnabled = true;
-          state.magicSeverityReduction = Number(change.value);
-        }
-        if (change?.key === "system.resistance.physical.resistance" && String(change?.value) === "1") {
-          state.physicalResistance = true;
-        }
-        if (change?.key === "system.resistance.magical.resistance" && String(change?.value) === "1") {
-          state.magicResistance = true;
-        }
-        if (change?.key === "system.resistance.physical.immunity" && String(change?.value) === "1") {
-          state.physicalImmunity = true;
-        }
-        if (change?.key === "system.resistance.magical.immunity" && String(change?.value) === "1") {
-          state.magicImmunity = true;
+    for (const effect of actor.effects ?? []) {
+      for (const change of (Array.isArray(effect.changes) ? effect.changes : [])) {
+        const v = Number(change?.value);
+        switch (change?.key) {
+          case "system.rules.damageReduction.reduceSeverity.physical":
+            if (v >= 1 && v <= 3) { state.physicalSeverityReductionEnabled = true; state.physicalSeverityReduction = v; }
+            break;
+          case "system.rules.damageReduction.reduceSeverity.magical":
+            if (v >= 1 && v <= 3) { state.magicSeverityReductionEnabled = true; state.magicSeverityReduction = v; }
+            break;
+          case "system.resistance.physical.resistance":   if (v === 1) state.physicalResistance = true; break;
+          case "system.resistance.magical.resistance":    if (v === 1) state.magicResistance = true; break;
+          case "system.resistance.physical.immunity":     if (v === 1) state.physicalImmunity = true; break;
+          case "system.resistance.magical.immunity":      if (v === 1) state.magicImmunity = true; break;
         }
       }
     }
