@@ -299,6 +299,7 @@
 .dhac-field input[type="number"],
 .dhac-experience-row input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* Cursor hint that scroll-wheel changes the value */
@@ -653,6 +654,59 @@
   background: var(--dhac-gold-soft);
   border-color: rgba(245,158,11,0.4);
   color: var(--dhac-gold);
+}
+
+/* Horde pinned card */
+.dhac-horde-suggestion {
+  font-size: var(--dhac-font-labels);
+  color: var(--dhac-gold);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dhac-horde-avg {
+  font-weight: 600;
+}
+.dhac-horde-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+.dhac-horde-custom-input {
+  flex: 1;
+  max-width: 110px;
+  padding: 3px 7px;
+  font-size: var(--dhac-font-labels);
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--dhac-border);
+  border-radius: var(--dhac-radius-sm);
+  color: var(--dhac-text);
+}
+.dhac-horde-auto-btn {
+  padding: 3px 10px;
+  font-size: var(--dhac-font-labels);
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--dhac-radius-sm);
+  color: var(--dhac-text-muted);
+  cursor: pointer;
+  transition: background var(--dhac-ease), border-color var(--dhac-ease), color var(--dhac-ease);
+  white-space: nowrap;
+}
+.dhac-horde-auto-btn:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--dhac-text);
+}
+.dhac-horde-auto-btn.is-on {
+  background: var(--dhac-gold-soft);
+  border-color: rgba(245,158,11,0.45);
+  color: var(--dhac-gold);
+}
+.dhac-horde-auto-btn.is-on:hover {
+  background: rgba(245,158,11,0.2);
 }
 
 .dhac-feature-top {
@@ -1521,4 +1575,777 @@ body.theme-light #one-minute-adversaries .dhac-features-scroll::-webkit-scrollba
 body.theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder,
 .theme-light #one-minute-adversaries .dhac-feature-name-input::placeholder {
   color: rgba(42,36,27,0.32);
+}
+
+/* =============================================================
+   IMAGE FAVORITES PICKER — popup window
+   ============================================================= */
+
+#dhac-image-favorites {
+  --dhac-glass-opacity: 0.65;
+  background: rgba(22, 22, 30, var(--dhac-glass-opacity)) !important;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.08) !important;
+}
+#dhac-image-favorites .window-content {
+  padding: 0 !important;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Two-panel layout */
+.dhac-fav-picker {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.dhac-fav-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Left panel — selected + default sections */
+.dhac-fav-selected-panel {
+  width: 130px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px;
+  gap: 0;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  overflow-y: auto;
+}
+.dhac-fav-selected-panel::-webkit-scrollbar { width: 3px; }
+.dhac-fav-selected-panel::-webkit-scrollbar-track { background: transparent; }
+.dhac-fav-selected-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.dhac-fav-panel-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.dhac-fav-panel-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 10px 0;
+  flex-shrink: 0;
+}
+
+.dhac-fav-panel-title {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255,255,255,0.3);
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+.dhac-fav-thumb-wrap {
+  width: 84px;
+  height: 84px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dhac-fav-thumb-wrap.dhac-fav-thumb-empty {
+  flex-direction: column;
+  gap: 4px;
+  color: rgba(255,255,255,0.2);
+  font-size: 9px;
+}
+.dhac-fav-thumb-wrap.dhac-fav-thumb-empty i {
+  font-size: 18px;
+  color: rgba(245,197,66,0.2);
+}
+.dhac-fav-panel-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+}
+
+.dhac-fav-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  width: 100%;
+  justify-content: center;
+  background: rgba(245,197,66,0.07);
+  border: 1px solid rgba(245,197,66,0.2);
+  border-radius: 5px;
+  color: rgba(245,197,66,0.65);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.dhac-fav-add-btn:hover {
+  background: rgba(245,197,66,0.14);
+  border-color: rgba(245,197,66,0.4);
+  color: #f5c542;
+}
+.dhac-fav-add-btn.is-saved {
+  background: rgba(245,197,66,0.12);
+  border-color: rgba(245,197,66,0.35);
+  color: #f5c542;
+}
+.dhac-fav-add-btn.is-saved:hover {
+  background: rgba(220,38,38,0.1);
+  border-color: rgba(220,38,38,0.3);
+  color: rgba(220,38,38,0.8);
+}
+
+.dhac-fav-default-label {
+  font-size: 9px;
+  color: rgba(245,197,66,0.6);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dhac-fav-default-hint {
+  font-size: 9px;
+  color: rgba(255,255,255,0.2);
+  text-align: center;
+  line-height: 1.3;
+}
+.dhac-fav-clear-default-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  width: 100%;
+  justify-content: center;
+  background: rgba(220,38,38,0.08);
+  border: 1px solid rgba(220,38,38,0.2);
+  border-radius: 5px;
+  color: rgba(220,38,38,0.55);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.dhac-fav-clear-default-btn:hover {
+  background: rgba(220,38,38,0.15);
+  border-color: rgba(220,38,38,0.4);
+  color: #ef4444;
+}
+
+/* Right panel — favorites grid */
+.dhac-fav-favorites-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dhac-fav-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-top: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+.dhac-fav-grid::-webkit-scrollbar { width: 4px; }
+.dhac-fav-grid::-webkit-scrollbar-track { background: transparent; }
+.dhac-fav-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+.dhac-fav-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.1s;
+  align-self: start; /* needed so aspect-ratio works inside a grid with overflow */
+}
+.dhac-fav-item:hover {
+  border-color: rgba(220,38,38,0.5);
+  transform: scale(1.04);
+}
+.dhac-fav-item.is-current {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220,38,38,0.25);
+}
+.dhac-fav-item.is-default {
+  border-color: rgba(245,197,66,0.5);
+}
+.dhac-fav-item.is-default.is-current {
+  border-color: #dc2626;
+}
+
+.dhac-fav-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  display: block;
+}
+
+/* Overlay buttons (crown + remove) — visible on hover, crown always visible if default */
+.dhac-fav-item-actions {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.dhac-fav-item:hover .dhac-fav-item-actions,
+.dhac-fav-item.is-default .dhac-fav-item-actions {
+  opacity: 1;
+}
+
+.dhac-fav-action-btn {
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.72);
+  border: none;
+  border-radius: 3px;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  font-size: 8px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.dhac-fav-crown.is-on { color: #f5c542; }
+.dhac-fav-crown:hover { color: #f5c542; }
+.dhac-fav-remove:hover { color: #dc2626; }
+
+/* Empty state (right panel) */
+.dhac-fav-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px 8px;
+  text-align: center;
+  color: rgba(255,255,255,0.3);
+  font-size: 11px;
+}
+.dhac-fav-empty-icon {
+  font-size: 22px;
+  color: rgba(245,197,66,0.25);
+  margin-bottom: 2px;
+}
+.dhac-fav-empty p { margin: 0; line-height: 1.4; }
+.dhac-fav-empty-hint {
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+}
+
+/* Footer */
+.dhac-fav-footer {
+  padding: 8px 10px 10px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.dhac-btn-browse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 16px;
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.dhac-btn-browse:hover {
+  background: rgba(220,38,38,0.1);
+  border-color: rgba(220,38,38,0.32);
+  color: rgba(255,255,255,0.9);
+}
+
+/* Light theme */
+body.theme-light #dhac-image-favorites,
+.theme-light #dhac-image-favorites {
+  background: rgba(250, 247, 241, 0.92) !important;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.2), 0 0 0 1px rgba(80,60,35,0.13) !important;
+}
+body.theme-light .dhac-fav-selected-panel,
+.theme-light .dhac-fav-selected-panel {
+  border-right-color: rgba(80,60,35,0.1);
+}
+body.theme-light .dhac-fav-panel-divider,
+.theme-light .dhac-fav-panel-divider {
+  background: rgba(80,60,35,0.1);
+}
+body.theme-light .dhac-fav-panel-title,
+.theme-light .dhac-fav-panel-title {
+  color: rgba(42,36,27,0.4);
+}
+body.theme-light .dhac-fav-thumb-wrap,
+.theme-light .dhac-fav-thumb-wrap {
+  border-color: rgba(80,60,35,0.13);
+  background: rgba(80,60,35,0.04);
+}
+body.theme-light .dhac-fav-default-hint,
+.theme-light .dhac-fav-default-hint {
+  color: rgba(42,36,27,0.3);
+}
+body.theme-light .dhac-fav-add-btn,
+.theme-light .dhac-fav-add-btn {
+  background: rgba(180,83,9,0.07);
+  border-color: rgba(180,83,9,0.2);
+  color: rgba(180,83,9,0.7);
+}
+body.theme-light .dhac-fav-add-btn:hover,
+.theme-light .dhac-fav-add-btn:hover {
+  background: rgba(180,83,9,0.13);
+  border-color: rgba(180,83,9,0.35);
+  color: #b45309;
+}
+body.theme-light .dhac-fav-add-btn.is-saved,
+.theme-light .dhac-fav-add-btn.is-saved {
+  background: rgba(180,83,9,0.1);
+  border-color: rgba(180,83,9,0.3);
+  color: #b45309;
+}
+body.theme-light .dhac-fav-item,
+.theme-light .dhac-fav-item {
+  border-color: rgba(80,60,35,0.12);
+  background: rgba(80,60,35,0.03);
+}
+body.theme-light .dhac-fav-item:hover,
+.theme-light .dhac-fav-item:hover {
+  border-color: rgba(146,64,14,0.4);
+}
+body.theme-light .dhac-fav-empty,
+.theme-light .dhac-fav-empty {
+  color: rgba(42,36,27,0.4);
+}
+body.theme-light .dhac-fav-footer,
+.theme-light .dhac-fav-footer {
+  border-top-color: rgba(80,60,35,0.1);
+}
+body.theme-light .dhac-btn-browse,
+.theme-light .dhac-btn-browse {
+  background: rgba(80,60,35,0.05);
+  border-color: rgba(80,60,35,0.14);
+  color: rgba(42,36,27,0.65);
+}
+body.theme-light .dhac-btn-browse:hover,
+.theme-light .dhac-btn-browse:hover {
+  background: rgba(146,64,14,0.08);
+  border-color: rgba(146,64,14,0.28);
+  color: #3a2f23;
+}
+body.theme-light .dhac-fav-clear-default-btn,
+.theme-light .dhac-fav-clear-default-btn {
+  background: rgba(185,28,28,0.06);
+  border-color: rgba(185,28,28,0.18);
+  color: rgba(185,28,28,0.6);
+}
+body.theme-light .dhac-fav-clear-default-btn:hover,
+.theme-light .dhac-fav-clear-default-btn:hover {
+  background: rgba(185,28,28,0.12);
+  border-color: rgba(185,28,28,0.35);
+  color: #b91c1c;
+}
+
+/* ===========================================================================
+   Budget Calculator — sidebar button + ApplicationV2 window
+   =========================================================================== */
+
+/* Sidebar fieldset wrapper */
+.dhac-budget-fieldset {
+  border: 2px groove rgb(243, 194, 103);
+  border-radius: 6px;
+  padding: 5px 11px 9px;
+  margin: 5px 2px 0;
+}
+.dhac-budget-fieldset legend {
+  color: rgb(243, 194, 103);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 2px;
+}
+
+/* Sidebar inject button */
+.dhac-budget-calc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 0 8px;
+  height: 28px;
+  background: rgb(243, 194, 103);
+  border: 1px solid rgb(24, 22, 46);
+  border-radius: 4px;
+  color: rgb(24, 22, 46);
+  font-size: 14px;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.dhac-budget-calc-btn:hover { filter: brightness(1.08); }
+
+/* Calculator window */
+#dhac-budget-calculator {
+  background: rgba(22,22,30,0.82);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06);
+}
+#dhac-budget-calculator .window-content { padding: 0; }
+
+.dhac-bc-wrap {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 0;
+  color: rgba(235,232,225,0.9);
+  font-size: 14px;
+}
+
+/* Header */
+.dhac-bc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.dhac-bc-players-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dhac-bc-players-label {
+  font-size: 13px;
+  color: rgba(235,232,225,0.55);
+  white-space: nowrap;
+  margin-right: 2px;
+}
+.dhac-bc-player-btn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 3px;
+  color: rgba(235,232,225,0.7);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, color 0.1s;
+}
+.dhac-bc-player-btn:hover {
+  background: rgba(245,158,11,0.15);
+  color: var(--dhac-gold, #f5c542);
+}
+.dhac-bc-player-count {
+  min-width: 22px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(235,232,225,0.9);
+}
+.dhac-bc-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+.dhac-bc-spent  { color: rgba(235,232,225,0.9); }
+.dhac-bc-sep    { color: rgba(235,232,225,0.3); font-size: 16px; }
+.dhac-bc-budget { color: rgba(235,232,225,0.45); }
+.dhac-bc-bp-label { font-size: 13px; color: rgba(235,232,225,0.4); font-weight: 400; margin-left: 2px; }
+
+/* Progress bar */
+.dhac-bc-bar-wrap { margin-bottom: 6px; }
+.dhac-bc-bar {
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.dhac-bc-fill {
+  height: 100%;
+  background: transparent;
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+.dhac-bc-fill.is-over { background: #dc2626; }
+
+/* Status */
+.dhac-bc-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: rgba(245,158,11,0.85);
+  margin-bottom: 10px;
+}
+.dhac-bc-status.is-over { color: #f87171; }
+.dhac-bc-status strong  { font-weight: 700; }
+
+/* Two-column layout */
+.dhac-bc-columns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Left: role list */
+.dhac-bc-roles {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dhac-bc-role-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 5px;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+.dhac-bc-role-row.has-count { background: rgba(245,158,11,0.07); }
+.dhac-bc-role-label {
+  flex: 1;
+  color: rgba(235,232,225,0.8);
+}
+.dhac-bc-role-cost {
+  font-size: 12px;
+  color: rgba(235,232,225,0.3);
+  min-width: 30px;
+  text-align: right;
+}
+.dhac-bc-counter {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.dhac-bc-btn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: rgba(255,255,255,0.04);
+  border: none;
+  color: rgba(235,232,225,0.7);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dhac-bc-btn:hover:not(:disabled) {
+  background: rgba(245,158,11,0.15);
+  color: var(--dhac-gold, #f5c542);
+}
+.dhac-bc-btn:disabled { opacity: 0.2; cursor: default; }
+.dhac-bc-count {
+  min-width: 26px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(235,232,225,0.9);
+  background: rgba(0,0,0,0.2);
+  line-height: 20px;
+}
+
+/* Right: overview panel */
+.dhac-bc-overview {
+  width: 130px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 5px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dhac-bc-overview-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(235,232,225,0.35);
+  margin-bottom: 2px;
+}
+.dhac-bc-ov-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+.dhac-bc-ov-label { flex: 1; color: rgba(235,232,225,0.8); }
+.dhac-bc-ov-count { color: rgba(235,232,225,0.45); font-size: 12px; }
+.dhac-bc-ov-total { color: var(--dhac-gold, #f5c542); font-size: 12px; min-width: 28px; text-align: right; }
+.dhac-bc-ov-empty {
+  color: rgba(235,232,225,0.25);
+  font-size: 13px;
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: auto;
+  line-height: 1.5;
+}
+
+/* Adjustments section */
+.dhac-bc-adj-section {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 8px;
+  margin-bottom: 8px;
+}
+.dhac-bc-adj-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(235,232,225,0.35);
+  margin-bottom: 5px;
+}
+.dhac-bc-adj-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+.dhac-bc-adj-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 3px 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+  font-size: 13px;
+  color: rgba(235,232,225,0.6);
+}
+.dhac-bc-adj-stepper {
+  cursor: default;
+  align-items: center;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 6px;
+}
+.dhac-bc-adj-stepper:hover { background: none; }
+.dhac-bc-lower-tier-val {
+  min-width: 24px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(235,232,225,0.9);
+}
+.dhac-bc-adj-row:hover { background: rgba(255,255,255,0.04); }
+.dhac-bc-adj-row.is-on {
+  background: rgba(245,158,11,0.07);
+  color: rgba(235,232,225,0.9);
+}
+.dhac-bc-adj-row input[type="checkbox"] {
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: var(--dhac-gold, #f5c542);
+}
+.dhac-bc-adj-bp {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+  padding: 1px 3px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.dhac-bc-adj-bp.is-pos {
+  background: rgba(245,158,11,0.15);
+  color: var(--dhac-gold, #f5c542);
+}
+.dhac-bc-adj-bp.is-neg {
+  background: rgba(220,38,38,0.12);
+  color: #f87171;
+}
+.dhac-bc-adj-desc { line-height: 1.4; }
+
+/* Custom BP row */
+.dhac-bc-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 5px;
+}
+.dhac-bc-custom-label {
+  flex: 1;
+  font-size: 13px;
+  color: rgba(235,232,225,0.55);
+}
+.dhac-bc-custom-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dhac-bc-custom-val {
+  min-width: 28px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(235,232,225,0.9);
+}
+
+/* Footer */
+.dhac-bc-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 8px;
+}
+.dhac-bc-reset-btn {
+  padding: 4px 12px;
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  color: rgba(235,232,225,0.4);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dhac-bc-reset-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: rgba(235,232,225,0.7);
 }

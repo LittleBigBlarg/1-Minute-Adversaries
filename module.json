@@ -1,7 +1,7 @@
 {
   "id": "one-minute-adversaries",
   "title": "Daggerheart: 1-Minute Adversaries",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Build or edit Daggerheart adversaries in Foundry with benchmark autofill, natural-language feature action detection, multi-experience support, and inline damage roll tagging.",
   "compatibility": {
     "minimum": "12",

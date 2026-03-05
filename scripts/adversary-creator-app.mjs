@@ -1,4 +1,5 @@
 import { BENCHMARKS, ROLES, RANGES, EXPERIENCE_BY_TIER, mid, rangeStr, ROLE_TIPS, ROLE_FEATURES } from "./benchmarks.mjs";
+import { ImageFavoritesPicker, getDefault } from "./image-favorites.mjs";
 
 const MODULE_ID = "one-minute-adversaries";
 const DEFAULT_FEATURE_ICON = "systems/daggerheart/assets/icons/documents/items/stars-stack.svg";
@@ -38,7 +39,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     hp: 4, stress: 3, atk: 1,
     minionPassiveValue: 4,
     groupAttackDamage: 4, groupAttackType: "physical",
-    weaponImg: DEFAULT_ATTACK_ICON,
+    weaponImg: getDefault("attack") || DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
     weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
     weaponDamageFlat: 4,
@@ -55,6 +56,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     },
     experiences: [AdversaryCreatorApp._newExperience()],
     features: [AdversaryCreatorApp._newFeature()],
+    hordeAutoHalve: true,
+    hordeDamage: "",
   };
 
   static _parseMinionDice(diceStr) {
@@ -65,6 +68,15 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     return { rangeStr: `${min}-${max}`, mid: Math.round((min + max) / 2) };
   }
 
+  static _computeHordeHalvedDice(s) {
+    const count = s.weaponDamageCount || 1;
+    const sides = parseInt((s.weaponDamageDice || "d8").replace("d", "")) || 8;
+    const bonus = s.weaponDamageBonus || 0;
+    const halfCount = Math.max(1, Math.floor(count / 2));
+    const halfBonus = Math.floor(bonus / 2);
+    return `${halfCount}d${sides}${halfBonus > 0 ? "+" + halfBonus : halfBonus < 0 ? halfBonus : ""}`;
+  }
+
   static _newExperience() {
     return { id: foundry.utils.randomID(), name: "", bonus: 2 };
   }
@@ -72,7 +84,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
   static _newFeature() {
     return {
       id: foundry.utils.randomID(), name: "", formType: "passive", description: "",
-      img: DEFAULT_FEATURE_ICON,
+      img: getDefault("feature") || DEFAULT_FEATURE_ICON,
       // Action toggles: null = not detected, false = detected but off (red), true = detected and on (green)
       toggles: {
         attackRoll: null,
@@ -129,6 +141,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       toggleAction: AdversaryCreatorApp._onToggleAction,
       addCommonFeatures: AdversaryCreatorApp._onAddCommonFeatures,
       toggleGroupAttackType: AdversaryCreatorApp._onToggleGroupAttackType,
+      toggleHordeAutoHalve: AdversaryCreatorApp._onToggleHordeAutoHalve,
     },
   };
 
@@ -173,6 +186,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         return parsed?.rangeStr ?? "";
       })(),
       minionPassiveValue: s.minionPassiveValue,
+      isHordeRole: s.role === "horde",
+      hordeAutoHalve: s.hordeAutoHalve ?? true,
+      hordeHalvedAvg: AdversaryCreatorApp._computeHordeHalvedDice(s),
+      hordeCurrentDamage: (s.hordeAutoHalve ?? true)
+        ? String(AdversaryCreatorApp._computeHordeHalvedDice(s))
+        : (s.hordeDamage || String(AdversaryCreatorApp._computeHordeHalvedDice(s))),
+      hordeWeaponDamageType: s.weaponDamageType || "physical",
     };
   }
 
@@ -224,6 +244,33 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     };
     groupDmgInput?.addEventListener("input", updateGroupAttackCard);
     groupTypeSelect?.addEventListener("change", updateGroupAttackCard);
+
+    // Horde: live-update pinned card when custom damage changes
+    const hordeDmgInput = html.querySelector("[name='hordeDamage']");
+    if (hordeDmgInput) {
+      hordeDmgInput.addEventListener("input", () => {
+        const val = hordeDmgInput.value;
+        this._state.hordeDamage = val;
+        html.querySelectorAll(".dhac-horde-dmg").forEach(el => el.textContent = val || "0");
+      });
+    }
+
+    // Horde: live-update suggested avg when weapon inputs change
+    const updateHordeAvg = () => {
+      if (!html.querySelector(".dhac-horde-avg")) return;
+      this._readForm();
+      const avg = AdversaryCreatorApp._computeHordeHalvedDice(this._state);
+      html.querySelector(".dhac-horde-avg").textContent = avg;
+      if (this._state.hordeAutoHalve) {
+        html.querySelectorAll(".dhac-horde-dmg").forEach(el => el.textContent = avg);
+      }
+    };
+    ["weaponDamageCount", "weaponDamageDice", "weaponDamageBonus"].forEach(name => {
+      html.querySelector(`[name='${name}']`)?.addEventListener("change", updateHordeAvg);
+    });
+    html.querySelector("[name='weaponDamageType']")?.addEventListener("change", (e) => {
+      html.querySelectorAll(".dhac-horde-type").forEach(el => el.textContent = e.target.value);
+    });
 
     // Render initial toggle pills for all features
     for (let i = 0; i < this._state.features.length; i++) {
@@ -562,14 +609,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     f.damageRolls = newDamageRolls;
 
     // Detect "<trait> reaction roll" natural language patterns
-    const traits = ["strength", "instinct", "knowledge", "finesse", "presence", "agility"];
     const reactionRegex = /\b(strength|instinct|knowledge|finesse|presence|agility)\s+reaction(?:\s+rolls?)?\b/gi;
     const newReactionRolls = [];
     const seenReactionTraits = new Set();
     let m;
     while ((m = reactionRegex.exec(desc)) !== null) {
       const trait = m[1].toLowerCase();
-      if (!traits.includes(trait)) continue;
       if (seenReactionTraits.has(trait)) continue;
       seenReactionTraits.add(trait);
       const existing = prevReactionByTrait.get(trait);
@@ -674,6 +719,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     if (groupDmgEl) s.groupAttackDamage = Number(groupDmgEl.value) || 0;
     const groupTypeEl = html.querySelector("[name='groupAttackType']");
     if (groupTypeEl) s.groupAttackType = groupTypeEl.value ?? s.groupAttackType;
+    const hordeDmgEl = html.querySelector("[name='hordeDamage']");
+    if (hordeDmgEl) s.hordeDamage = hordeDmgEl.value;
     for (let i = 0; i < s.experiences.length; i++) {
       const e = s.experiences[i];
       e.name = html.querySelector(`[name='experience.${i}.name']`)?.value ?? e.name;
@@ -808,26 +855,22 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this._renderFeatureToggles(fi);
   }
 
-  static _openImagePicker(current, onPick) {
-    const Picker = globalThis.FilePicker ?? foundry?.applications?.apps?.FilePicker;
-    if (!Picker) {
-      ui.notifications.warn("Foundry File Picker is not available.");
-      return;
-    }
-
-    new Picker({
-      type: "imagevideo",
-      current,
-      callback: onPick,
-    }).render(true);
+  static _openImagePicker(current, onPick, slotType = "actor") {
+    new ImageFavoritesPicker(current, onPick, slotType).render(true);
   }
 
   static _onPickActorImage() {
     this._readForm();
-    AdversaryCreatorApp._openImagePicker(this._state.img || DEFAULT_ACTOR_ICON, (path) => {
-      this._state.img = path || DEFAULT_ACTOR_ICON;
-      this.render();
-    });
+    const Picker = globalThis.FilePicker ?? foundry?.applications?.apps?.FilePicker;
+    if (!Picker) return;
+    new Picker({
+      type: "imagevideo",
+      current: this._state.img || DEFAULT_ACTOR_ICON,
+      callback: (path) => {
+        this._state.img = path || DEFAULT_ACTOR_ICON;
+        this.render();
+      },
+    }).render(true);
   }
 
   static _onResetActorImage() {
@@ -845,7 +888,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     AdversaryCreatorApp._openImagePicker(feature.img || DEFAULT_FEATURE_ICON, (path) => {
       feature.img = path || DEFAULT_FEATURE_ICON;
       this.render();
-    });
+    }, "feature");
   }
 
   static _onResetFeatureImage(event, target) {
@@ -853,7 +896,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     const fi = Number(target.dataset.featureIndex);
     const feature = this._state.features[fi];
     if (!feature) return;
-    feature.img = DEFAULT_FEATURE_ICON;
+    feature.img = getDefault("feature") || DEFAULT_FEATURE_ICON;
     this.render();
   }
 
@@ -862,12 +905,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     AdversaryCreatorApp._openImagePicker(this._state.weaponImg || DEFAULT_ATTACK_ICON, (path) => {
       this._state.weaponImg = path || DEFAULT_ATTACK_ICON;
       this.render();
-    });
+    }, "attack");
   }
 
   static _onResetAttackImage() {
     this._readForm();
-    this._state.weaponImg = DEFAULT_ATTACK_ICON;
+    this._state.weaponImg = getDefault("attack") || DEFAULT_ATTACK_ICON;
     this.render();
   }
 
@@ -884,6 +927,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     const key = target.dataset.effectKey;
     if (!(key in this._state.effects)) return;
     this._state.effects[key] = !this._state.effects[key];
+    this.render();
+  }
+
+  static _onToggleHordeAutoHalve() {
+    this._readForm();
+    this._state.hordeAutoHalve = !this._state.hordeAutoHalve;
+    if (this._state.hordeAutoHalve) this._state.hordeDamage = "";
     this.render();
   }
 
@@ -924,7 +974,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       hp: 4, stress: 3, atk: 1,
       minionPassiveValue: 4,
       groupAttackDamage: 4, groupAttackType: "physical",
-      weaponImg: DEFAULT_ATTACK_ICON,
+      weaponImg: getDefault("attack") || DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
       weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
       weaponDamageFlat: 4,
@@ -941,6 +991,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       },
       experiences: [AdversaryCreatorApp._newExperience()],
       features: [AdversaryCreatorApp._newFeature()],
+      hordeAutoHalve: true,
+      hordeDamage: "",
     };
     this.render();
   }
@@ -1194,6 +1246,21 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       }
 
       const autoItems = [];
+      if (s.role === "horde") {
+        const hordeDmg = (s.hordeAutoHalve ?? true)
+          ? AdversaryCreatorApp._computeHordeHalvedDice(s)
+          : (s.hordeDamage || AdversaryCreatorApp._computeHordeHalvedDice(s));
+        autoItems.push({
+          name: "Horde",
+          type: "feature",
+          img: DEFAULT_FEATURE_ICON,
+          flags: { [MODULE_ID]: { autoHorde: true } },
+          system: {
+            featureForm: "passive",
+            description: `<p>When the @Lookup[@name] have marked half or more of their HP, their standard attack deals [[/r ${hordeDmg}]] ${s.weaponDamageType || "physical"} damage instead.</p>`,
+          },
+        });
+      }
       if (s.role === "minion") {
         const passiveVal = s.minionPassiveValue || 1;
         const flatDmg = s.weaponDamageFlat;
@@ -1244,6 +1311,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         name: s.name.trim(), type: "adversary",
         system: systemData, items, effects: AdversaryCreatorApp._buildResistanceEffects(s.effects), img: s.img || DEFAULT_ACTOR_ICON,
         ...(s.role === "minion" ? { flags: { [MODULE_ID]: { minionPassiveValue: s.minionPassiveValue, groupAttackDamage: s.groupAttackDamage, groupAttackType: s.groupAttackType } } } : {}),
+        ...(s.role === "horde" ? { flags: { [MODULE_ID]: { hordeAutoHalve: s.hordeAutoHalve ?? true, hordeDamage: s.hordeDamage ?? "" } } } : {}),
       };
 
       if (this._editingActorId) {
@@ -1260,6 +1328,10 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
             [`flags.${MODULE_ID}.minionPassiveValue`]: s.minionPassiveValue,
             [`flags.${MODULE_ID}.groupAttackDamage`]: s.groupAttackDamage,
             [`flags.${MODULE_ID}.groupAttackType`]: s.groupAttackType,
+          } : {}),
+          ...(s.role === "horde" ? {
+            [`flags.${MODULE_ID}.hordeAutoHalve`]: s.hordeAutoHalve ?? true,
+            [`flags.${MODULE_ID}.hordeDamage`]: s.hordeDamage ?? "",
           } : {}),
         };
 
@@ -1322,7 +1394,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     }));
 
     const features = actor.items
-      .filter(item => item.type === "feature" && !item.flags?.[MODULE_ID]?.autoMinion)
+      .filter(item => item.type === "feature" && !item.flags?.[MODULE_ID]?.autoMinion && !item.flags?.[MODULE_ID]?.autoHorde)
       .map((item, index) => this._featureStateFromItem(item, index));
 
     this._state = {
@@ -1340,6 +1412,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       minionPassiveValue: Number(actor.flags?.[MODULE_ID]?.minionPassiveValue) || 4,
       groupAttackDamage: Number(actor.flags?.[MODULE_ID]?.groupAttackDamage) || 4,
       groupAttackType: actor.flags?.[MODULE_ID]?.groupAttackType ?? "physical",
+      hordeAutoHalve: actor.flags?.[MODULE_ID]?.hordeAutoHalve ?? true,
+      hordeDamage: actor.flags?.[MODULE_ID]?.hordeDamage ?? "",
       stress: Number(system.resources?.stress?.max) || 0,
       atk: Number.parseInt(attack.roll?.bonus, 10) || 0,
       weaponImg: attack.img ?? DEFAULT_ATTACK_ICON,
@@ -1368,37 +1442,20 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       magicImmunity: false,
     };
 
-    const effects = Array.from(actor.effects ?? []);
-    for (const effect of effects) {
-      const changes = Array.isArray(effect.changes) ? effect.changes : [];
-      for (const change of changes) {
-        if (change?.key === "system.rules.damageReduction.reduceSeverity.physical" && String(change?.value) === "1") {
-          state.physicalSeverityReductionEnabled = true;
-          state.physicalSeverityReduction = 1;
-        }
-        if (change?.key === "system.rules.damageReduction.reduceSeverity.physical" && ["2", "3"].includes(String(change?.value))) {
-          state.physicalSeverityReductionEnabled = true;
-          state.physicalSeverityReduction = Number(change.value);
-        }
-        if (change?.key === "system.rules.damageReduction.reduceSeverity.magical" && String(change?.value) === "1") {
-          state.magicSeverityReductionEnabled = true;
-          state.magicSeverityReduction = 1;
-        }
-        if (change?.key === "system.rules.damageReduction.reduceSeverity.magical" && ["2", "3"].includes(String(change?.value))) {
-          state.magicSeverityReductionEnabled = true;
-          state.magicSeverityReduction = Number(change.value);
-        }
-        if (change?.key === "system.resistance.physical.resistance" && String(change?.value) === "1") {
-          state.physicalResistance = true;
-        }
-        if (change?.key === "system.resistance.magical.resistance" && String(change?.value) === "1") {
-          state.magicResistance = true;
-        }
-        if (change?.key === "system.resistance.physical.immunity" && String(change?.value) === "1") {
-          state.physicalImmunity = true;
-        }
-        if (change?.key === "system.resistance.magical.immunity" && String(change?.value) === "1") {
-          state.magicImmunity = true;
+    for (const effect of actor.effects ?? []) {
+      for (const change of (Array.isArray(effect.changes) ? effect.changes : [])) {
+        const v = Number(change?.value);
+        switch (change?.key) {
+          case "system.rules.damageReduction.reduceSeverity.physical":
+            if (v >= 1 && v <= 3) { state.physicalSeverityReductionEnabled = true; state.physicalSeverityReduction = v; }
+            break;
+          case "system.rules.damageReduction.reduceSeverity.magical":
+            if (v >= 1 && v <= 3) { state.magicSeverityReductionEnabled = true; state.magicSeverityReduction = v; }
+            break;
+          case "system.resistance.physical.resistance":   if (v === 1) state.physicalResistance = true; break;
+          case "system.resistance.magical.resistance":    if (v === 1) state.magicResistance = true; break;
+          case "system.resistance.physical.immunity":     if (v === 1) state.physicalImmunity = true; break;
+          case "system.resistance.magical.immunity":      if (v === 1) state.magicImmunity = true; break;
         }
       }
     }

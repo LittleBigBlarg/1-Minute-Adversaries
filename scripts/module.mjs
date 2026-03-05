@@ -1,4 +1,5 @@
 import { AdversaryCreatorApp } from "./adversary-creator-app.mjs";
+import { AdversaryBudgetCalculator } from "./budget-calculator.mjs";
 
 const MODULE_ID = "one-minute-adversaries";
 
@@ -19,6 +20,24 @@ Hooks.once("init", () => {
     onDown: () => { new AdversaryCreatorApp().render(true); },
     restricted: true,
     precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
+  });
+
+  game.settings.register(MODULE_ID, "favoritedImages", {
+    name: "Favorited Images",
+    hint: "Image paths saved to the favorites picker (managed in-app).",
+    scope: "client",
+    config: false,
+    type: Array,
+    default: [],
+  });
+
+  game.settings.register(MODULE_ID, "imageDefaults", {
+    name: "Image Defaults",
+    hint: "Default image paths per slot type (actor, attack, feature), set via the favorites picker.",
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {},
   });
 
   game.settings.register(MODULE_ID, "hideQuickEditButton", {
@@ -181,6 +200,42 @@ Hooks.on("renderApplicationV2", (app, element) => {
     ev.stopPropagation();
     AdversaryCreatorApp.openForActor(actor);
   }, true);
+});
+
+// ---------------------------------------------------------------------------
+// Daggerheart Menu sidebar — inject Budget Calculator button into GM Tools
+// ---------------------------------------------------------------------------
+
+Hooks.on("renderApplicationV2", (app, element) => {
+  if (app?.options?.id !== "daggerheartMenu") return;
+  if (!game.user.isGM) return;
+  const root = element instanceof HTMLElement ? element : app?.element;
+  if (!root || root.querySelector(".dhac-budget-fieldset")) return;
+
+  // The daggerheart menu sidebar wraps all content in a first-child DIV — inject there
+  const gmSection = root.querySelector("[data-tab='gm-tools']")
+    ?? root.querySelector(".gm-tools")
+    ?? root.querySelector(".directory-list")
+    ?? root.querySelector(":scope > div")
+    ?? root;
+
+  const fieldset = document.createElement("fieldset");
+  fieldset.className = "dhac-budget-fieldset";
+  const legend = document.createElement("legend");
+  legend.textContent = "Adversary Budget";
+  fieldset.appendChild(legend);
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "dhac-budget-calc-btn";
+  btn.innerHTML = `<i class="fas fa-scale-balanced"></i> Open Calculator`;
+  btn.addEventListener("click", () => {
+    const existing = Object.values(ui.windows ?? {}).find(w => w.id === "dhac-budget-calculator");
+    if (existing) { existing.bringToTop(); return; }
+    new AdversaryBudgetCalculator().render(true);
+  });
+  fieldset.appendChild(btn);
+  gmSection.appendChild(fieldset);
 });
 
 // ---------------------------------------------------------------------------
