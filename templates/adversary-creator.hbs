@@ -274,6 +274,38 @@
           </div>
         </div>
         {{/if}}
+        {{#if isHordeRole}}
+        <div class="dhac-feature-card dhac-feature-pinned">
+          <div class="dhac-pinned-feature-header">
+            <span class="dhac-feature-pinned-type">Passive</span>
+            <span class="dhac-pinned-lock" title="Auto-generated for horde role"><i class="fas fa-lock"></i></span>
+          </div>
+          <div class="dhac-feature-pinned-name">Horde</div>
+          <div class="dhac-horde-suggestion">
+            <i class="fas fa-dice"></i> Halved dice: <strong class="dhac-horde-avg">{{hordeHalvedAvg}}</strong> <span class="dhac-horde-type">{{hordeWeaponDamageType}}</span>
+          </div>
+          <div class="dhac-feature-pinned-desc">When the &lt;name&gt; have marked half or more of their HP, their standard attack deals <strong><span class="dhac-horde-dmg">{{hordeCurrentDamage}}</span></strong> <span class="dhac-horde-type">{{hordeWeaponDamageType}}</span> damage instead.</div>
+          <div class="dhac-horde-footer">
+            {{#unless hordeAutoHalve}}
+            <input
+              type="text"
+              name="hordeDamage"
+              value="{{hordeCurrentDamage}}"
+              class="dhac-horde-custom-input"
+              placeholder="e.g. 2d6+3"
+            />
+            {{/unless}}
+            <button
+              type="button"
+              data-action="toggleHordeAutoHalve"
+              class="dhac-horde-auto-btn{{#if hordeAutoHalve}} is-on{{/if}}"
+              title="{{#if hordeAutoHalve}}Auto-halve is ON — click to set custom damage{{else}}Auto-halve is OFF — click to use suggested damage{{/if}}"
+            >
+              <i class="fas fa-scissors"></i> Auto-Halve: {{#if hordeAutoHalve}}On{{else}}Off{{/if}}
+            </button>
+          </div>
+        </div>
+        {{/if}}
         {{#each features}}
         <div class="dhac-feature-card">
           <div class="dhac-feature-top">

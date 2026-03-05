@@ -655,6 +655,59 @@
   color: var(--dhac-gold);
 }
 
+/* Horde pinned card */
+.dhac-horde-suggestion {
+  font-size: var(--dhac-font-labels);
+  color: var(--dhac-gold);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dhac-horde-avg {
+  font-weight: 600;
+}
+.dhac-horde-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+.dhac-horde-custom-input {
+  flex: 1;
+  max-width: 110px;
+  padding: 3px 7px;
+  font-size: var(--dhac-font-labels);
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--dhac-border);
+  border-radius: var(--dhac-radius-sm);
+  color: var(--dhac-text);
+}
+.dhac-horde-auto-btn {
+  padding: 3px 10px;
+  font-size: var(--dhac-font-labels);
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--dhac-radius-sm);
+  color: var(--dhac-text-muted);
+  cursor: pointer;
+  transition: background var(--dhac-ease), border-color var(--dhac-ease), color var(--dhac-ease);
+  white-space: nowrap;
+}
+.dhac-horde-auto-btn:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--dhac-text);
+}
+.dhac-horde-auto-btn.is-on {
+  background: var(--dhac-gold-soft);
+  border-color: rgba(245,158,11,0.45);
+  color: var(--dhac-gold);
+}
+.dhac-horde-auto-btn.is-on:hover {
+  background: rgba(245,158,11,0.2);
+}
+
 .dhac-feature-top {
   display: flex;
   gap: 6px;

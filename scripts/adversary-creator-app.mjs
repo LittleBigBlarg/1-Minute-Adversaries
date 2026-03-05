@@ -31,7 +31,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
   _fontSettingsPanelOpen = false;
 
   _state = {
-    img: getDefault("actor") || DEFAULT_ACTOR_ICON,
+    img: DEFAULT_ACTOR_ICON,
     rightTab: "features",
     name: "", tier: 1, role: "standard",
     description: "", motives: "",
@@ -56,6 +56,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     },
     experiences: [AdversaryCreatorApp._newExperience()],
     features: [AdversaryCreatorApp._newFeature()],
+    hordeAutoHalve: true,
+    hordeDamage: "",
   };
 
   static _parseMinionDice(diceStr) {
@@ -64,6 +66,15 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     if (!m) return null;
     const min = parseInt(m[1]), max = parseInt(m[2]);
     return { rangeStr: `${min}-${max}`, mid: Math.round((min + max) / 2) };
+  }
+
+  static _computeHordeHalvedDice(s) {
+    const count = s.weaponDamageCount || 1;
+    const sides = parseInt((s.weaponDamageDice || "d8").replace("d", "")) || 8;
+    const bonus = s.weaponDamageBonus || 0;
+    const halfCount = Math.max(1, Math.floor(count / 2));
+    const halfBonus = Math.floor(bonus / 2);
+    return `${halfCount}d${sides}${halfBonus > 0 ? "+" + halfBonus : halfBonus < 0 ? halfBonus : ""}`;
   }
 
   static _newExperience() {
@@ -130,6 +141,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       toggleAction: AdversaryCreatorApp._onToggleAction,
       addCommonFeatures: AdversaryCreatorApp._onAddCommonFeatures,
       toggleGroupAttackType: AdversaryCreatorApp._onToggleGroupAttackType,
+      toggleHordeAutoHalve: AdversaryCreatorApp._onToggleHordeAutoHalve,
     },
   };
 
@@ -174,6 +186,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         return parsed?.rangeStr ?? "";
       })(),
       minionPassiveValue: s.minionPassiveValue,
+      isHordeRole: s.role === "horde",
+      hordeAutoHalve: s.hordeAutoHalve ?? true,
+      hordeHalvedAvg: AdversaryCreatorApp._computeHordeHalvedDice(s),
+      hordeCurrentDamage: (s.hordeAutoHalve ?? true)
+        ? String(AdversaryCreatorApp._computeHordeHalvedDice(s))
+        : (s.hordeDamage || String(AdversaryCreatorApp._computeHordeHalvedDice(s))),
+      hordeWeaponDamageType: s.weaponDamageType || "physical",
     };
   }
 
@@ -225,6 +244,33 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     };
     groupDmgInput?.addEventListener("input", updateGroupAttackCard);
     groupTypeSelect?.addEventListener("change", updateGroupAttackCard);
+
+    // Horde: live-update pinned card when custom damage changes
+    const hordeDmgInput = html.querySelector("[name='hordeDamage']");
+    if (hordeDmgInput) {
+      hordeDmgInput.addEventListener("input", () => {
+        const val = hordeDmgInput.value;
+        this._state.hordeDamage = val;
+        html.querySelectorAll(".dhac-horde-dmg").forEach(el => el.textContent = val || "0");
+      });
+    }
+
+    // Horde: live-update suggested avg when weapon inputs change
+    const updateHordeAvg = () => {
+      if (!html.querySelector(".dhac-horde-avg")) return;
+      this._readForm();
+      const avg = AdversaryCreatorApp._computeHordeHalvedDice(this._state);
+      html.querySelector(".dhac-horde-avg").textContent = avg;
+      if (this._state.hordeAutoHalve) {
+        html.querySelectorAll(".dhac-horde-dmg").forEach(el => el.textContent = avg);
+      }
+    };
+    ["weaponDamageCount", "weaponDamageDice", "weaponDamageBonus"].forEach(name => {
+      html.querySelector(`[name='${name}']`)?.addEventListener("change", updateHordeAvg);
+    });
+    html.querySelector("[name='weaponDamageType']")?.addEventListener("change", (e) => {
+      html.querySelectorAll(".dhac-horde-type").forEach(el => el.textContent = e.target.value);
+    });
 
     // Render initial toggle pills for all features
     for (let i = 0; i < this._state.features.length; i++) {
@@ -673,6 +719,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     if (groupDmgEl) s.groupAttackDamage = Number(groupDmgEl.value) || 0;
     const groupTypeEl = html.querySelector("[name='groupAttackType']");
     if (groupTypeEl) s.groupAttackType = groupTypeEl.value ?? s.groupAttackType;
+    const hordeDmgEl = html.querySelector("[name='hordeDamage']");
+    if (hordeDmgEl) s.hordeDamage = hordeDmgEl.value;
     for (let i = 0; i < s.experiences.length; i++) {
       const e = s.experiences[i];
       e.name = html.querySelector(`[name='experience.${i}.name']`)?.value ?? e.name;
@@ -882,6 +930,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this.render();
   }
 
+  static _onToggleHordeAutoHalve() {
+    this._readForm();
+    this._state.hordeAutoHalve = !this._state.hordeAutoHalve;
+    if (this._state.hordeAutoHalve) this._state.hordeDamage = "";
+    this.render();
+  }
+
   static _onToggleGroupAttackType(event, target) {
     this._readForm();
     const type = target.dataset.type;
@@ -936,6 +991,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       },
       experiences: [AdversaryCreatorApp._newExperience()],
       features: [AdversaryCreatorApp._newFeature()],
+      hordeAutoHalve: true,
+      hordeDamage: "",
     };
     this.render();
   }
@@ -1189,6 +1246,21 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       }
 
       const autoItems = [];
+      if (s.role === "horde") {
+        const hordeDmg = (s.hordeAutoHalve ?? true)
+          ? AdversaryCreatorApp._computeHordeHalvedDice(s)
+          : (s.hordeDamage || AdversaryCreatorApp._computeHordeHalvedDice(s));
+        autoItems.push({
+          name: "Horde",
+          type: "feature",
+          img: DEFAULT_FEATURE_ICON,
+          flags: { [MODULE_ID]: { autoHorde: true } },
+          system: {
+            featureForm: "passive",
+            description: `<p>When the @Lookup[@name] have marked half or more of their HP, their standard attack deals [[/r ${hordeDmg}]] ${s.weaponDamageType || "physical"} damage instead.</p>`,
+          },
+        });
+      }
       if (s.role === "minion") {
         const passiveVal = s.minionPassiveValue || 1;
         const flatDmg = s.weaponDamageFlat;
@@ -1239,6 +1311,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         name: s.name.trim(), type: "adversary",
         system: systemData, items, effects: AdversaryCreatorApp._buildResistanceEffects(s.effects), img: s.img || DEFAULT_ACTOR_ICON,
         ...(s.role === "minion" ? { flags: { [MODULE_ID]: { minionPassiveValue: s.minionPassiveValue, groupAttackDamage: s.groupAttackDamage, groupAttackType: s.groupAttackType } } } : {}),
+        ...(s.role === "horde" ? { flags: { [MODULE_ID]: { hordeAutoHalve: s.hordeAutoHalve ?? true, hordeDamage: s.hordeDamage ?? "" } } } : {}),
       };
 
       if (this._editingActorId) {
@@ -1255,6 +1328,10 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
             [`flags.${MODULE_ID}.minionPassiveValue`]: s.minionPassiveValue,
             [`flags.${MODULE_ID}.groupAttackDamage`]: s.groupAttackDamage,
             [`flags.${MODULE_ID}.groupAttackType`]: s.groupAttackType,
+          } : {}),
+          ...(s.role === "horde" ? {
+            [`flags.${MODULE_ID}.hordeAutoHalve`]: s.hordeAutoHalve ?? true,
+            [`flags.${MODULE_ID}.hordeDamage`]: s.hordeDamage ?? "",
           } : {}),
         };
 
@@ -1317,7 +1394,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     }));
 
     const features = actor.items
-      .filter(item => item.type === "feature" && !item.flags?.[MODULE_ID]?.autoMinion)
+      .filter(item => item.type === "feature" && !item.flags?.[MODULE_ID]?.autoMinion && !item.flags?.[MODULE_ID]?.autoHorde)
       .map((item, index) => this._featureStateFromItem(item, index));
 
     this._state = {
@@ -1335,6 +1412,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       minionPassiveValue: Number(actor.flags?.[MODULE_ID]?.minionPassiveValue) || 4,
       groupAttackDamage: Number(actor.flags?.[MODULE_ID]?.groupAttackDamage) || 4,
       groupAttackType: actor.flags?.[MODULE_ID]?.groupAttackType ?? "physical",
+      hordeAutoHalve: actor.flags?.[MODULE_ID]?.hordeAutoHalve ?? true,
+      hordeDamage: actor.flags?.[MODULE_ID]?.hordeDamage ?? "",
       stress: Number(system.resources?.stress?.max) || 0,
       atk: Number.parseInt(attack.roll?.bonus, 10) || 0,
       weaponImg: attack.img ?? DEFAULT_ATTACK_ICON,
