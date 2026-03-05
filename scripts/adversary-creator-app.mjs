@@ -1,4 +1,5 @@
 import { BENCHMARKS, ROLES, RANGES, EXPERIENCE_BY_TIER, mid, rangeStr, ROLE_TIPS, ROLE_FEATURES } from "./benchmarks.mjs";
+import { ImageFavoritesPicker, addFavorite, getDefault } from "./image-favorites.mjs";
 
 const MODULE_ID = "one-minute-adversaries";
 const DEFAULT_FEATURE_ICON = "systems/daggerheart/assets/icons/documents/items/stars-stack.svg";
@@ -30,7 +31,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
   _fontSettingsPanelOpen = false;
 
   _state = {
-    img: DEFAULT_ACTOR_ICON,
+    img: getDefault("actor") || DEFAULT_ACTOR_ICON,
     rightTab: "features",
     name: "", tier: 1, role: "standard",
     description: "", motives: "",
@@ -38,7 +39,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     hp: 4, stress: 3, atk: 1,
     minionPassiveValue: 4,
     groupAttackDamage: 4, groupAttackType: "physical",
-    weaponImg: DEFAULT_ATTACK_ICON,
+    weaponImg: getDefault("attack") || DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
     weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
     weaponDamageFlat: 4,
@@ -72,7 +73,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
   static _newFeature() {
     return {
       id: foundry.utils.randomID(), name: "", formType: "passive", description: "",
-      img: DEFAULT_FEATURE_ICON,
+      img: getDefault("feature") || DEFAULT_FEATURE_ICON,
       // Action toggles: null = not detected, false = detected but off (red), true = detected and on (green)
       toggles: {
         attackRoll: null,
@@ -808,26 +809,22 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this._renderFeatureToggles(fi);
   }
 
-  static _openImagePicker(current, onPick) {
-    const Picker = globalThis.FilePicker ?? foundry?.applications?.apps?.FilePicker;
-    if (!Picker) {
-      ui.notifications.warn("Foundry File Picker is not available.");
-      return;
-    }
-
-    new Picker({
-      type: "imagevideo",
-      current,
-      callback: onPick,
-    }).render(true);
+  static _openImagePicker(current, onPick, slotType = "actor") {
+    new ImageFavoritesPicker(current, onPick, slotType).render(true);
   }
 
   static _onPickActorImage() {
     this._readForm();
-    AdversaryCreatorApp._openImagePicker(this._state.img || DEFAULT_ACTOR_ICON, (path) => {
-      this._state.img = path || DEFAULT_ACTOR_ICON;
-      this.render();
-    });
+    const Picker = globalThis.FilePicker ?? foundry?.applications?.apps?.FilePicker;
+    if (!Picker) return;
+    new Picker({
+      type: "imagevideo",
+      current: this._state.img || DEFAULT_ACTOR_ICON,
+      callback: (path) => {
+        this._state.img = path || DEFAULT_ACTOR_ICON;
+        this.render();
+      },
+    }).render(true);
   }
 
   static _onResetActorImage() {
@@ -845,7 +842,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     AdversaryCreatorApp._openImagePicker(feature.img || DEFAULT_FEATURE_ICON, (path) => {
       feature.img = path || DEFAULT_FEATURE_ICON;
       this.render();
-    });
+    }, "feature");
   }
 
   static _onResetFeatureImage(event, target) {
@@ -853,7 +850,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     const fi = Number(target.dataset.featureIndex);
     const feature = this._state.features[fi];
     if (!feature) return;
-    feature.img = DEFAULT_FEATURE_ICON;
+    feature.img = getDefault("feature") || DEFAULT_FEATURE_ICON;
     this.render();
   }
 
@@ -862,12 +859,12 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     AdversaryCreatorApp._openImagePicker(this._state.weaponImg || DEFAULT_ATTACK_ICON, (path) => {
       this._state.weaponImg = path || DEFAULT_ATTACK_ICON;
       this.render();
-    });
+    }, "attack");
   }
 
   static _onResetAttackImage() {
     this._readForm();
-    this._state.weaponImg = DEFAULT_ATTACK_ICON;
+    this._state.weaponImg = getDefault("attack") || DEFAULT_ATTACK_ICON;
     this.render();
   }
 
@@ -924,7 +921,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       hp: 4, stress: 3, atk: 1,
       minionPassiveValue: 4,
       groupAttackDamage: 4, groupAttackType: "physical",
-      weaponImg: DEFAULT_ATTACK_ICON,
+      weaponImg: getDefault("attack") || DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
       weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
       weaponDamageFlat: 4,

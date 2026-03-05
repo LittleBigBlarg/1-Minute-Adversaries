@@ -21,6 +21,24 @@ Hooks.once("init", () => {
     precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
   });
 
+  game.settings.register(MODULE_ID, "favoritedImages", {
+    name: "Favorited Images",
+    hint: "Image paths saved to the favorites picker (managed in-app).",
+    scope: "client",
+    config: false,
+    type: Array,
+    default: [],
+  });
+
+  game.settings.register(MODULE_ID, "imageDefaults", {
+    name: "Image Defaults",
+    hint: "Default image paths per slot type (actor, attack, feature), set via the favorites picker.",
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {},
+  });
+
   game.settings.register(MODULE_ID, "hideQuickEditButton", {
     name: "Hide 'Quick Edit' button on adversary sheet headers",
     hint: "When enabled, the Quick Edit button will not be injected into adversary sheet headers. The Quick Edit option in the '...' menu is always available regardless.",

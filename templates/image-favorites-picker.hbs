@@ -1,0 +1,101 @@
+<div class="dhac-fav-picker">
+  <div class="dhac-fav-body">
+
+    {{!-- Left panel --}}
+    <div class="dhac-fav-selected-panel">
+
+      <div class="dhac-fav-panel-section">
+        <div class="dhac-fav-panel-title">Selected Image</div>
+        <div class="dhac-fav-thumb-wrap">
+          <img src="{{current}}" alt="" class="dhac-fav-panel-thumb" />
+        </div>
+        <button
+          type="button"
+          data-action="addToFavorites"
+          class="dhac-fav-add-btn{{#if isAlreadyFavorite}} is-saved{{/if}}"
+          title="{{#if isAlreadyFavorite}}Remove from favorites{{else}}Add to favorites{{/if}}"
+        >
+          <i class="fas fa-star"></i>
+          {{#if isAlreadyFavorite}}Saved{{else}}Add to Favorites{{/if}}
+        </button>
+      </div>
+
+      <div class="dhac-fav-panel-divider"></div>
+
+      <div class="dhac-fav-panel-section">
+        <div class="dhac-fav-panel-title">Default Image</div>
+        {{#if defaultPath}}
+        <div class="dhac-fav-thumb-wrap">
+          <img src="{{defaultPath}}" alt="" class="dhac-fav-panel-thumb" />
+        </div>
+        <div class="dhac-fav-default-label">
+          <i class="fas fa-crown"></i> Active default
+        </div>
+        <button
+          type="button"
+          data-action="clearDefault"
+          class="dhac-fav-clear-default-btn"
+          title="Remove default"
+        >
+          <i class="fas fa-times"></i> Remove Default
+        </button>
+        {{else}}
+        <div class="dhac-fav-thumb-wrap dhac-fav-thumb-empty">
+          <i class="fas fa-crown"></i>
+          <span>None set</span>
+        </div>
+        <div class="dhac-fav-default-hint">Crown a favorite →</div>
+        {{/if}}
+      </div>
+
+    </div>
+
+    {{!-- Right panel — favorites grid --}}
+    <div class="dhac-fav-favorites-panel">
+      <div class="dhac-fav-panel-title">Favorites</div>
+      {{#if favorites.length}}
+      <div class="dhac-fav-grid">
+        {{#each favorites}}
+        <div
+          class="dhac-fav-item{{#if this.isDefault}} is-default{{/if}}{{#if (eq this.path ../current)}} is-current{{/if}}"
+          data-action="pickFavorite"
+          data-path="{{this.path}}"
+          title="{{this.path}}"
+        >
+          <img src="{{this.path}}" alt="" class="dhac-fav-thumb" />
+          <div class="dhac-fav-item-actions">
+            <button
+              type="button"
+              class="dhac-fav-action-btn dhac-fav-crown{{#if this.isDefault}} is-on{{/if}}"
+              data-action="setFavDefault"
+              data-path="{{this.path}}"
+              title="{{#if this.isDefault}}Unset as default{{else}}Set as default for this slot{{/if}}"
+            ><i class="fas fa-crown"></i></button>
+            <button
+              type="button"
+              class="dhac-fav-action-btn dhac-fav-remove"
+              data-action="removeFavorite"
+              data-path="{{this.path}}"
+              title="Remove from favorites"
+            ><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{else}}
+      <div class="dhac-fav-empty">
+        <i class="fas fa-star dhac-fav-empty-icon"></i>
+        <p>No favorites yet.</p>
+        <p class="dhac-fav-empty-hint">Click <strong>Add to Favorites</strong> to save images here for quick access.</p>
+      </div>
+      {{/if}}
+    </div>
+
+  </div>
+
+  <div class="dhac-fav-footer">
+    <button type="button" data-action="browseFiles" class="dhac-btn-browse">
+      <i class="fas fa-folder-open"></i> Browse Files...
+    </button>
+  </div>
+</div>
