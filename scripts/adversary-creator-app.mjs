@@ -39,6 +39,9 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     hp: 4, stress: 3, atk: 1,
     minionPassiveValue: 4,
     groupAttackDamage: 4, groupAttackType: "physical",
+    minionPassiveImg: getDefault("feature") || DEFAULT_FEATURE_ICON,
+    minionGroupAttackImg: getDefault("feature") || DEFAULT_FEATURE_ICON,
+    hordeFeatureImg: getDefault("feature") || DEFAULT_FEATURE_ICON,
     weaponImg: getDefault("attack") || DEFAULT_ATTACK_ICON,
     weaponName: "", weaponRange: "melee",
     weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
@@ -134,6 +137,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       pickAttackImage: AdversaryCreatorApp._onPickAttackImage,
       resetFeatureImage: AdversaryCreatorApp._onResetFeatureImage,
       resetAttackImage: AdversaryCreatorApp._onResetAttackImage,
+      pickPinnedFeatureImage: AdversaryCreatorApp._onPickPinnedFeatureImage,
+      resetPinnedFeatureImage: AdversaryCreatorApp._onResetPinnedFeatureImage,
       switchRightTab: AdversaryCreatorApp._onSwitchRightTab,
       toggleEffectFlag: AdversaryCreatorApp._onToggleEffectFlag,
       createAdversary: AdversaryCreatorApp._onCreateAdversary,
@@ -900,6 +905,26 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     this.render();
   }
 
+  static _onPickPinnedFeatureImage(event, target) {
+    this._readForm();
+    const key = target.dataset.pinnedKey;
+    const stateKey = { minionPassive: "minionPassiveImg", minionGroupAttack: "minionGroupAttackImg", horde: "hordeFeatureImg" }[key];
+    if (!stateKey) return;
+    AdversaryCreatorApp._openImagePicker(this._state[stateKey] || DEFAULT_FEATURE_ICON, (path) => {
+      this._state[stateKey] = path || DEFAULT_FEATURE_ICON;
+      this.render();
+    }, "feature");
+  }
+
+  static _onResetPinnedFeatureImage(event, target) {
+    this._readForm();
+    const key = target.dataset.pinnedKey;
+    const stateKey = { minionPassive: "minionPassiveImg", minionGroupAttack: "minionGroupAttackImg", horde: "hordeFeatureImg" }[key];
+    if (!stateKey) return;
+    this._state[stateKey] = getDefault("feature") || DEFAULT_FEATURE_ICON;
+    this.render();
+  }
+
   static _onPickAttackImage() {
     this._readForm();
     AdversaryCreatorApp._openImagePicker(this._state.weaponImg || DEFAULT_ATTACK_ICON, (path) => {
@@ -974,8 +999,11 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       hp: 4, stress: 3, atk: 1,
       minionPassiveValue: 4,
       groupAttackDamage: 4, groupAttackType: "physical",
+      minionPassiveImg: getDefault("feature") || DEFAULT_FEATURE_ICON,
+      minionGroupAttackImg: getDefault("feature") || DEFAULT_FEATURE_ICON,
+      hordeFeatureImg: getDefault("feature") || DEFAULT_FEATURE_ICON,
       weaponImg: getDefault("attack") || DEFAULT_ATTACK_ICON,
-    weaponName: "", weaponRange: "melee",
+      weaponName: "", weaponRange: "melee",
       weaponDamageDice: "d8", weaponDamageCount: 1, weaponDamageBonus: 3,
       weaponDamageFlat: 4,
       weaponDamageType: "physical",
@@ -1253,7 +1281,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         autoItems.push({
           name: "Horde",
           type: "feature",
-          img: DEFAULT_FEATURE_ICON,
+          img: s.hordeFeatureImg || DEFAULT_FEATURE_ICON,
           flags: { [MODULE_ID]: { autoHorde: true } },
           system: {
             featureForm: "passive",
@@ -1270,7 +1298,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         autoItems.push({
           name: `Minion(${passiveVal})`,
           type: "feature",
-          img: DEFAULT_FEATURE_ICON,
+          img: s.minionPassiveImg || DEFAULT_FEATURE_ICON,
           flags: { [MODULE_ID]: { autoMinion: true } },
           system: {
             featureForm: "passive",
@@ -1280,7 +1308,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         autoItems.push({
           name: "Group Attack",
           type: "feature",
-          img: DEFAULT_FEATURE_ICON,
+          img: s.minionGroupAttackImg || DEFAULT_FEATURE_ICON,
           flags: { [MODULE_ID]: { autoMinion: true } },
           system: {
             featureForm: "action",
@@ -1310,8 +1338,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       const actorData = {
         name: s.name.trim(), type: "adversary",
         system: systemData, items, effects: AdversaryCreatorApp._buildResistanceEffects(s.effects), img: s.img || DEFAULT_ACTOR_ICON,
-        ...(s.role === "minion" ? { flags: { [MODULE_ID]: { minionPassiveValue: s.minionPassiveValue, groupAttackDamage: s.groupAttackDamage, groupAttackType: s.groupAttackType } } } : {}),
-        ...(s.role === "horde" ? { flags: { [MODULE_ID]: { hordeAutoHalve: s.hordeAutoHalve ?? true, hordeDamage: s.hordeDamage ?? "" } } } : {}),
+        ...(s.role === "minion" ? { flags: { [MODULE_ID]: { minionPassiveValue: s.minionPassiveValue, groupAttackDamage: s.groupAttackDamage, groupAttackType: s.groupAttackType, minionPassiveImg: s.minionPassiveImg, minionGroupAttackImg: s.minionGroupAttackImg } } } : {}),
+        ...(s.role === "horde" ? { flags: { [MODULE_ID]: { hordeAutoHalve: s.hordeAutoHalve ?? true, hordeDamage: s.hordeDamage ?? "", hordeFeatureImg: s.hordeFeatureImg } } } : {}),
       };
 
       if (this._editingActorId) {
@@ -1328,10 +1356,13 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
             [`flags.${MODULE_ID}.minionPassiveValue`]: s.minionPassiveValue,
             [`flags.${MODULE_ID}.groupAttackDamage`]: s.groupAttackDamage,
             [`flags.${MODULE_ID}.groupAttackType`]: s.groupAttackType,
+            [`flags.${MODULE_ID}.minionPassiveImg`]: s.minionPassiveImg,
+            [`flags.${MODULE_ID}.minionGroupAttackImg`]: s.minionGroupAttackImg,
           } : {}),
           ...(s.role === "horde" ? {
             [`flags.${MODULE_ID}.hordeAutoHalve`]: s.hordeAutoHalve ?? true,
             [`flags.${MODULE_ID}.hordeDamage`]: s.hordeDamage ?? "",
+            [`flags.${MODULE_ID}.hordeFeatureImg`]: s.hordeFeatureImg,
           } : {}),
         };
 
@@ -1412,8 +1443,11 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       minionPassiveValue: Number(actor.flags?.[MODULE_ID]?.minionPassiveValue) || 4,
       groupAttackDamage: Number(actor.flags?.[MODULE_ID]?.groupAttackDamage) || 4,
       groupAttackType: actor.flags?.[MODULE_ID]?.groupAttackType ?? "physical",
+      minionPassiveImg: actor.flags?.[MODULE_ID]?.minionPassiveImg || getDefault("feature") || DEFAULT_FEATURE_ICON,
+      minionGroupAttackImg: actor.flags?.[MODULE_ID]?.minionGroupAttackImg || getDefault("feature") || DEFAULT_FEATURE_ICON,
       hordeAutoHalve: actor.flags?.[MODULE_ID]?.hordeAutoHalve ?? true,
       hordeDamage: actor.flags?.[MODULE_ID]?.hordeDamage ?? "",
+      hordeFeatureImg: actor.flags?.[MODULE_ID]?.hordeFeatureImg || getDefault("feature") || DEFAULT_FEATURE_ICON,
       stress: Number(system.resources?.stress?.max) || 0,
       atk: Number.parseInt(attack.roll?.bonus, 10) || 0,
       weaponImg: attack.img ?? DEFAULT_ATTACK_ICON,

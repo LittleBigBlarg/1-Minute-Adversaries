@@ -41,7 +41,7 @@ Hooks.once("init", () => {
   });
 
   game.settings.register(MODULE_ID, "hideQuickEditButton", {
-    name: "Hide 'Quick Edit' button on adversary sheet headers",
+    name: "Hide 'Quick Edit' Button",
     hint: "When enabled, the Quick Edit button will not be injected into adversary sheet headers. The Quick Edit option in the '...' menu is always available regardless.",
     scope: "world",
     config: true,
