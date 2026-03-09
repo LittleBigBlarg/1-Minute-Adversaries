@@ -252,6 +252,14 @@
       <div class="dhac-features-scroll">
         {{#if isMinionRole}}
         <div class="dhac-feature-card dhac-feature-pinned">
+          <div class="dhac-feature-top">
+            <button type="button" class="dhac-feature-image-btn" data-action="pickPinnedFeatureImage" data-pinned-key="minionPassive" title="Choose feature image">
+              <img src="{{minionPassiveImg}}" alt="" class="dhac-feature-image" />
+            </button>
+            <button type="button" class="dhac-feature-image-reset-btn" data-action="resetPinnedFeatureImage" data-pinned-key="minionPassive" title="Reset feature image">
+              <i class="fas fa-undo"></i>
+            </button>
+          </div>
           <div class="dhac-pinned-feature-header">
             <span class="dhac-feature-pinned-type">Passive</span>
             {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}
@@ -261,6 +269,14 @@
           <div class="dhac-feature-pinned-desc">This adversary is defeated when they take any damage. For every <strong class="dhac-pinned-passive-mid">{{minionPassiveValue}}</strong> damage a PC deals to this adversary, defeat an additional Minion within range the attack would succeed against.</div>
         </div>
         <div class="dhac-feature-card dhac-feature-pinned">
+          <div class="dhac-feature-top">
+            <button type="button" class="dhac-feature-image-btn" data-action="pickPinnedFeatureImage" data-pinned-key="minionGroupAttack" title="Choose feature image">
+              <img src="{{minionGroupAttackImg}}" alt="" class="dhac-feature-image" />
+            </button>
+            <button type="button" class="dhac-feature-image-reset-btn" data-action="resetPinnedFeatureImage" data-pinned-key="minionGroupAttack" title="Reset feature image">
+              <i class="fas fa-undo"></i>
+            </button>
+          </div>
           <div class="dhac-pinned-feature-header">
             <span class="dhac-feature-pinned-type">Action</span>
             {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}
@@ -276,6 +292,14 @@
         {{/if}}
         {{#if isHordeRole}}
         <div class="dhac-feature-card dhac-feature-pinned">
+          <div class="dhac-feature-top">
+            <button type="button" class="dhac-feature-image-btn" data-action="pickPinnedFeatureImage" data-pinned-key="horde" title="Choose feature image">
+              <img src="{{hordeFeatureImg}}" alt="" class="dhac-feature-image" />
+            </button>
+            <button type="button" class="dhac-feature-image-reset-btn" data-action="resetPinnedFeatureImage" data-pinned-key="horde" title="Reset feature image">
+              <i class="fas fa-undo"></i>
+            </button>
+          </div>
           <div class="dhac-pinned-feature-header">
             <span class="dhac-feature-pinned-type">Passive</span>
             <span class="dhac-pinned-lock" title="Auto-generated for horde role"><i class="fas fa-lock"></i></span>
