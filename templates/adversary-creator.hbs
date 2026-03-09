@@ -259,13 +259,15 @@
             <button type="button" class="dhac-feature-image-reset-btn" data-action="resetPinnedFeatureImage" data-pinned-key="minionPassive" title="Reset feature image">
               <i class="fas fa-undo"></i>
             </button>
+            <div class="dhac-pinned-top-info">
+              <div class="dhac-pinned-feature-header">
+                <span class="dhac-feature-pinned-type">Passive</span>
+                {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}
+                <span class="dhac-pinned-lock" title="Auto-generated for minion role"><i class="fas fa-lock"></i></span>
+              </div>
+              <div class="dhac-feature-pinned-name">Minion<span class="dhac-pinned-x">({{minionPassiveValue}})</span></div>
+            </div>
           </div>
-          <div class="dhac-pinned-feature-header">
-            <span class="dhac-feature-pinned-type">Passive</span>
-            {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}
-            <span class="dhac-pinned-lock" title="Auto-generated for minion role"><i class="fas fa-lock"></i></span>
-          </div>
-          <div class="dhac-feature-pinned-name">Minion<span class="dhac-pinned-x">({{minionPassiveValue}})</span></div>
           <div class="dhac-feature-pinned-desc">This adversary is defeated when they take any damage. For every <strong class="dhac-pinned-passive-mid">{{minionPassiveValue}}</strong> damage a PC deals to this adversary, defeat an additional Minion within range the attack would succeed against.</div>
         </div>
         <div class="dhac-feature-card dhac-feature-pinned">
@@ -276,13 +278,15 @@
             <button type="button" class="dhac-feature-image-reset-btn" data-action="resetPinnedFeatureImage" data-pinned-key="minionGroupAttack" title="Reset feature image">
               <i class="fas fa-undo"></i>
             </button>
+            <div class="dhac-pinned-top-info">
+              <div class="dhac-pinned-feature-header">
+                <span class="dhac-feature-pinned-type">Action</span>
+                {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}
+                <span class="dhac-pinned-lock" title="Auto-generated for minion role"><i class="fas fa-lock"></i></span>
+              </div>
+              <div class="dhac-feature-pinned-name">Group Attack</div>
+            </div>
           </div>
-          <div class="dhac-pinned-feature-header">
-            <span class="dhac-feature-pinned-type">Action</span>
-            {{#if minionDiceRangeStr}}<span class="dhac-range">({{minionDiceRangeStr}})</span>{{/if}}
-            <span class="dhac-pinned-lock" title="Auto-generated for minion role"><i class="fas fa-lock"></i></span>
-          </div>
-          <div class="dhac-feature-pinned-name">Group Attack</div>
           <div class="dhac-feature-pinned-desc">Spend a Fear to choose a target and spotlight all adversaries within Close range of them. Those Minions move into Melee range of the target and make one shared attack roll. On a success, they deal <strong><span class="dhac-pinned-group-dmg">{{groupAttackDamage}}</span></strong> <span class="dhac-pinned-group-type">{{groupAttackType}}</span> damage each. Combine this damage.</div>
           <div class="dhac-group-attack-type-row">
             <button type="button" class="dhac-type-toggle {{#if (eq groupAttackType 'physical')}}is-on{{/if}}" data-action="toggleGroupAttackType" data-type="physical">Physical</button>
@@ -299,12 +303,14 @@
             <button type="button" class="dhac-feature-image-reset-btn" data-action="resetPinnedFeatureImage" data-pinned-key="horde" title="Reset feature image">
               <i class="fas fa-undo"></i>
             </button>
+            <div class="dhac-pinned-top-info">
+              <div class="dhac-pinned-feature-header">
+                <span class="dhac-feature-pinned-type">Passive</span>
+                <span class="dhac-pinned-lock" title="Auto-generated for horde role"><i class="fas fa-lock"></i></span>
+              </div>
+              <div class="dhac-feature-pinned-name">Horde</div>
+            </div>
           </div>
-          <div class="dhac-pinned-feature-header">
-            <span class="dhac-feature-pinned-type">Passive</span>
-            <span class="dhac-pinned-lock" title="Auto-generated for horde role"><i class="fas fa-lock"></i></span>
-          </div>
-          <div class="dhac-feature-pinned-name">Horde</div>
           <div class="dhac-horde-suggestion">
             <i class="fas fa-dice"></i> Halved dice: <strong class="dhac-horde-avg">{{hordeHalvedAvg}}</strong> <span class="dhac-horde-type">{{hordeWeaponDamageType}}</span>
           </div>
