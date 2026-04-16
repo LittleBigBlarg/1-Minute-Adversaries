@@ -582,7 +582,9 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     // Natural lang:  2d8+4 physical damage, 1d10+3 magic damage, deal 2d6 damage
     const damagePatterns = [
       // Tag syntax (backward compat)
-      /damage:(\d+d\d+(?:[+-]\d+)?)(?:\s+(phy|mag|physical|magical))?/gi,
+      /damage:(\d+d\d+(?:[+-]\d+)?)(?:\s+(phy|mag|dir|physical|magical|direct))?/gi,
+      // Natural language: "XdY+Z direct damage"
+      /(\d+d\d+(?:\s*[+-]\s*\d+)?)\s+direct\s+damage/gi,
       // Natural language: "XdY+Z physical/magic damage" or "XdY+Z direct physical/magic damage"
       /(\d+d\d+(?:\s*[+-]\s*\d+)?)\s+(?:direct\s+)?(physical|magic(?:al)?)\s+damage/gi,
       // Plain: "XdY+Z damage" (no type = physical)
@@ -594,8 +596,11 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       let m;
       while ((m = regex.exec(desc)) !== null) {
         const formula = m[1].replace(/\s/g, "");
-        const rawType = m[2] || "";
-        const type = rawType.startsWith("mag") ? "mag" : "phy";
+        const rawType = (m[2] || "").toLowerCase();
+        let type;
+        if (rawType.startsWith("mag")) type = "mag";
+        else if (rawType.startsWith("dir") || /\bdirect\s+damage\b/i.test(m[0])) type = "dir";
+        else type = "phy";
         const key = `${formula}|${type}`;
         if (seenDamageKeys.has(key)) continue;
         seenDamageKeys.add(key);
@@ -673,7 +678,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     // Dynamic: detected damage rolls
     for (let di = 0; di < feature.damageRolls.length; di++) {
       const d = feature.damageRolls[di];
-      const label = `Damage ${d.formula} (${d.type === "mag" ? "Magical" : "Physical"})`;
+      const label = `Damage ${d.formula} (${d.type === "mag" ? "Magical" : d.type === "dir" ? "Direct" : "Physical"})`;
       pills.push(this._pill(label, `damage-${di}`, index, d.enabled, "damage"));
     }
 
@@ -1103,6 +1108,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     for (const d of feature.damageRolls) {
       if (!d.enabled) continue;
       const damageType = d.type === "mag" ? "magical" : "physical";
+      const isDirect = d.type === "dir";
       const id = foundry.utils.randomID(16);
       actions[id] = {
         type: "damage", _id: id, systemPath: "actions", baseAction: false,
@@ -1110,12 +1116,14 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
         actionType: "action", triggers: [], cost: [],
         uses: { value: null, max: "", recovery: null, consumeOnSuccess: false },
         damage: {
-          parts: [{
-            value: { custom: { enabled: true, formula: d.formula }, multiplier: "prof", flatMultiplier: 1, dice: "d6", bonus: null },
-            applyTo: "hitPoints", type: [damageType], base: false, resultBased: false,
-            valueAlt: { multiplier: "prof", flatMultiplier: 1, dice: "d6", bonus: null, custom: { enabled: false, formula: "" } },
-          }],
-          includeBase: false, direct: false,
+          parts: {
+            main: {
+              value: { custom: { enabled: true, formula: d.formula }, multiplier: "prof", flatMultiplier: 1, dice: "d6", bonus: null },
+              applyTo: "hitPoints", type: [damageType], base: false, resultBased: false,
+              valueAlt: { multiplier: "prof", flatMultiplier: 1, dice: "d6", bonus: null, custom: { enabled: false, formula: "" } },
+            },
+          },
+          includeBase: false, direct: isDirect,
         },
         target: { type: "any", amount: null }, effects: [],
         name: `Damage (${d.formula})`, range: "",
@@ -1255,12 +1263,14 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
           roll: { type: "attack", bonus: String(s.atk) },
           img: s.weaponImg || DEFAULT_ATTACK_ICON,
           damage: {
-            parts: [{
-              value: s.role === "minion"
-                ? { custom: { enabled: true, formula: String(s.weaponDamageFlat) }, multiplier: "flat", flatMultiplier: 1, dice: "d6", bonus: null }
-                : { custom: { enabled: false, formula: "" }, flatMultiplier: s.weaponDamageCount, dice: s.weaponDamageDice, bonus: s.weaponDamageBonus || null, multiplier: "flat" },
-              type: [s.weaponDamageType], applyTo: "hitPoints",
-            }],
+            parts: {
+              main: {
+                value: s.role === "minion"
+                  ? { custom: { enabled: true, formula: String(s.weaponDamageFlat) }, multiplier: "flat", flatMultiplier: 1, dice: "d6", bonus: null }
+                  : { custom: { enabled: false, formula: "" }, flatMultiplier: s.weaponDamageCount, dice: s.weaponDamageDice, bonus: s.weaponDamageBonus || null, multiplier: "flat" },
+                type: [s.weaponDamageType], applyTo: "hitPoints",
+              },
+            },
             includeBase: false, direct: false,
           },
         },
@@ -1315,13 +1325,26 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
             description: `<p>Spend a Fear to choose a target and spotlight all adversaries within Close range of them. Those Minions move into Melee range of the target and make one shared attack roll. On a success, they deal [[/r ${groupDmg}]] ${groupType} damage each. Combine this damage.</p>`,
             actions: {
               [fearId]: {
-                type: "effect", _id: fearId, systemPath: "actions", baseAction: false,
+                type: "attack", _id: fearId, systemPath: "actions", baseAction: false,
                 description: "", chatDisplay: true, originItem: { type: "itemCollection" },
                 actionType: "action", triggers: [],
                 cost: [{ scalable: false, key: "fear", value: 1, itemId: null, step: null, consumeOnSuccess: false }],
                 uses: { value: null, max: "", recovery: null, consumeOnSuccess: false },
                 effects: [], target: { type: "any", amount: null },
-                name: "Spend Fear", range: "",
+                roll: { type: "attack", trait: null, difficulty: null, bonus: null, advState: "neutral",
+                  diceRolling: { multiplier: "prof", flatMultiplier: 1, dice: "d6", compare: null, treshold: null }, useDefault: false },
+                save: { trait: null, difficulty: null, damageMod: "none" },
+                damage: {
+                  parts: {
+                    main: {
+                      value: { custom: { enabled: true, formula: String(groupDmg) }, multiplier: "flat", flatMultiplier: 1, dice: "d6", bonus: null },
+                      type: [groupType], applyTo: "hitPoints", base: false, resultBased: false,
+                      valueAlt: { multiplier: "flat", flatMultiplier: 1, dice: "d6", bonus: null, custom: { enabled: false, formula: "" } },
+                    },
+                  },
+                  includeBase: false, direct: false, groupAttack: "close",
+                },
+                name: "Group Attack", range: "melee",
               },
             },
           },
@@ -1416,7 +1439,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
 
     const system = actor.system ?? {};
     const attack = system.attack ?? {};
-    const damagePart = attack.damage?.parts?.[0] ?? {};
+    const partsObj = attack.damage?.parts ?? {};
+    const damagePart = (Array.isArray(partsObj) ? partsObj[0] : Object.values(partsObj)[0]) ?? {};
     const damageValue = damagePart.value ?? {};
     const experiences = Object.entries(system.experiences ?? {}).map(([id, exp]) => ({
       id,
@@ -1457,7 +1481,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       weaponDamageCount: Number(damageValue.flatMultiplier) || 1,
       weaponDamageBonus: Number(damageValue.bonus) || 0,
       weaponDamageFlat: damageValue.custom?.enabled ? (Number(damageValue.custom.formula) || 0) : 4,
-      weaponDamageType: damagePart.type?.[0] ?? "physical",
+      weaponDamageType: [...(damagePart.type ?? [])][0] ?? "physical",
       effects: this._readResistanceEffectsFromActor(actor),
       experiences: experiences.length ? experiences : [AdversaryCreatorApp._newExperience()],
       features: features.length ? features : [AdversaryCreatorApp._newFeature()],
@@ -1525,12 +1549,14 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       if (costs.some(c => c?.key === "stress")) feature.toggles.spendStress = true;
 
       if (action.type === "damage") {
-        const parts = Array.isArray(action.damage?.parts) ? action.damage.parts : [];
+        const isDirect = action.damage?.direct === true;
+        const rawParts = action.damage?.parts;
+        const parts = Array.isArray(rawParts) ? rawParts : Object.values(rawParts ?? {});
         for (const part of parts) {
           const formula = part?.value?.custom?.formula;
           if (!formula) continue;
-          const rawType = Array.isArray(part?.type) ? part.type[0] : "physical";
-          const type = typeof rawType === "string" && rawType.startsWith("mag") ? "mag" : "phy";
+          const rawType = [...(part?.type ?? [])][0] ?? "physical";
+          const type = isDirect ? "dir" : typeof rawType === "string" && rawType.startsWith("mag") ? "mag" : "phy";
           if (!feature.damageRolls.some(d => d.formula === formula && d.type === type)) {
             feature.damageRolls.push({ formula, type, enabled: true });
           }
