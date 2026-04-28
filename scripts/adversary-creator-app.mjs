@@ -26,6 +26,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   _editingActorId = null;
+  _editingActorPack = null;
   _featureDescParseTimers = new Map();
   _fontSettings = AdversaryCreatorApp._loadFontSettings();
   _fontSettingsPanelOpen = false;
@@ -984,9 +985,9 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     });
   }
 
-  static _onResetForm() {
+  static async _onResetForm() {
     if (this._editingActorId) {
-      const actor = game.actors?.get(this._editingActorId);
+      const actor = await this._resolveEditingActor();
       if (actor) {
         this._populateFromActor(actor);
         this.render();
@@ -1268,7 +1269,8 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
                 value: s.role === "minion"
                   ? { custom: { enabled: true, formula: String(s.weaponDamageFlat) }, multiplier: "flat", flatMultiplier: 1, dice: "d6", bonus: null }
                   : { custom: { enabled: false, formula: "" }, flatMultiplier: s.weaponDamageCount, dice: s.weaponDamageDice, bonus: s.weaponDamageBonus || null, multiplier: "flat" },
-                type: [s.weaponDamageType], applyTo: "hitPoints",
+                type: [s.weaponDamageType], applyTo: "hitPoints", base: false, resultBased: false,
+                valueAlt: { multiplier: "flat", flatMultiplier: 1, dice: "d6", bonus: null, custom: { enabled: false, formula: "" } },
               },
             },
             includeBase: false, direct: false,
@@ -1366,7 +1368,7 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
       };
 
       if (this._editingActorId) {
-        const actor = game.actors?.get(this._editingActorId);
+        const actor = await this._resolveEditingActor();
         if (!actor) throw new Error("Adversary actor not found.");
 
         const oldExperienceIds = Object.keys(actor.system?.experiences ?? {});
@@ -1393,6 +1395,10 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
           if (!newExperienceIds.has(expId)) {
             updateData[`system.experiences.-=${expId}`] = null;
           }
+        }
+
+        for (const key of Object.keys(actor.system?.attack?.damage?.parts ?? {})) {
+          if (key !== "main") updateData[`system.attack.damage.parts.-=${key}`] = null;
         }
 
         await actor.update(updateData);
@@ -1430,12 +1436,22 @@ export class AdversaryCreatorApp extends HandlebarsApplicationMixin(ApplicationV
     }
   }
 
+  async _resolveEditingActor() {
+    if (!this._editingActorId) return null;
+    if (this._editingActorPack) {
+      const pack = game.packs.get(this._editingActorPack);
+      return pack ? await pack.getDocument(this._editingActorId) : null;
+    }
+    return game.actors?.get(this._editingActorId) ?? null;
+  }
+
   _populateFromActor(actor) {
     if (!actor || actor.type !== "adversary") {
       throw new Error("Quick edit only supports adversary actors.");
     }
 
     this._editingActorId = actor.id;
+    this._editingActorPack = actor.pack ?? null;
 
     const system = actor.system ?? {};
     const attack = system.attack ?? {};
